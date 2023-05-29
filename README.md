@@ -33,19 +33,18 @@
 
 ## Preperation
 
-### Public set
+### Download data
 
-```bash
-cd data
-wget https://140.112.48.121:25251/sharing/Lw8QTICUf
-```
-
-### Private set
-
-```bash
-cd data
-wget https://140.112.48.121:25251/sharing/PyViYwNsv
-```
+1. Public dataset
+    - Go to https://140.112.48.121:25251/sharing/Lw8QTICUf
+    - Press download
+    - Move the downloaded zip file into `data` and unzip it
+    - Rename the output folder to  `public`
+2. Private dataset:
+    - Go to https://140.112.48.121:25251/sharing/PyViYwNsv
+    - Press download
+    - Move the downloaded zip file into `data` and unzip it
+    - Rename the output folder to  `private`
 
 ## Related Informations
 
@@ -53,3 +52,4 @@ wget https://140.112.48.121:25251/sharing/PyViYwNsv
 
 1. [Introduction to camera intrinsics and extrinsics](https://towardsdatascience.com/what-are-intrinsic-and-extrinsic-camera-parameters-in-computer-vision-7071b72fb8ec)
 2. [Base link implementation](http://wiki.ros.org/tf2_ros)
+3. [OpenCV find contours](https://docs.opencv.org/4.x/d4/d73/tutorial_py_contours_begin.html)
