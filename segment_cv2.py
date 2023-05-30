@@ -55,7 +55,6 @@ class BaseSegmentWorke:
             ]
         """
         img = img if isinstance(img, torch.Tensor) else T.PILToTensor()(img)
-
         N_OBJECTS = detection["labels"].shape[0]
         assert (
             N_OBJECTS == detection["boxes"].shape[0]
@@ -65,6 +64,7 @@ class BaseSegmentWorke:
         cropped_imgs = []
         for i in range(N_OBJECTS):
             xmin, ymin, xmax, ymax = boxes[i]
+            xmin, ymin, xmax, ymax = max(xmin, 0), max(ymin, 0), min(xmax, img.size(2)), min(ymax, img.size(1))
             cropped_imgs.append({"type": detection["labels"][i].item(), "img": img[:, ymin:ymax, xmin:xmax]})
 
         return cropped_imgs

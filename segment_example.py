@@ -11,7 +11,7 @@ from distutils.util import strtobool
 parser = argparse.ArgumentParser()
 parser.add_argument("--seq_path", type=str,
     help="seq path, some thing like /your/path/ITRI_dataset/seq1")
-parser.add_argument("--epsilon_coef", type=float, default=0.02,
+parser.add_argument("--eps_coef", type=float, default=0.02,
         help="approx eps coef, small->detailed, big->rough")
 parser.add_argument("--contour_thres", type=float, default=0.8,
         help="contour threshold (number of std), small->light threshold, big->strict threshold")
@@ -35,6 +35,7 @@ for route in names:
         detection_file = pd.read_csv(detection_route)
         detection_data = detection_file.values
         detection_data = np.stack([detection_data[i] for i in range(detection_data.shape[0]) if detection_data[i, 4]<args.detect_label_num])
+        # print(detection_data.shape)
         detection_dict = {'boxes': torch.from_numpy(detection_data[:, :4]), 'labels': torch.from_numpy(detection_data[:, 4])}
     except:
         continue
