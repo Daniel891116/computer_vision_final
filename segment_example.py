@@ -32,6 +32,7 @@ for route in names:
     image_route = os.path.join(root_path, route, 'raw_image.jpg')
     try:
         image = Image.open(image_route)
+        # image = cv2.imread(image_route)
         detection_file = pd.read_csv(detection_route)
         detection_data = detection_file.values
         detection_data = np.stack([detection_data[i] for i in range(detection_data.shape[0]) if detection_data[i, 4]<args.detect_label_num])
@@ -41,8 +42,8 @@ for route in names:
         continue
     
     #############################################################
-    # contours: list of dict                                    #
-    # each dict: {"type": label, "contour": all_contour_points} #
+    # contours: list contour points (ndarray)                   #
+    # contour points: ndarray, (num_points, 1, 2)               #
     #############################################################
     contours, terminated = segmentor(image, detection_dict)
     

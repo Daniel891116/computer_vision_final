@@ -18,21 +18,37 @@ class BaseSegmentWorke:
         
     def __call__(self, img: Union[Image.Image, torch.Tensor], detection: Dict[str, torch.Tensor]) -> Any:
         cropped_imgs = self.__crop_bbox_region(img, detection)
-
+        terminated = False
         contours = []
         for crop_i in cropped_imgs:
             approx = self.__segment(crop_i["img"])
-            contours.append({"type": crop_i["type"], "contour": approx})
-            temp_img = crop_i['img'].permute(1,2,0).numpy()
-            terminated = False
-            if self.show_contour:
-                cv2.drawContours(temp_img, approx, -1, (0, 255, 0), 1)
-                cv2.imshow('Rectangles', temp_img)
-                a = cv2.waitKey(0)
-                if a == 27:
-                    terminated = True
-                cv2.destroyAllWindows()
-            
+            for one_contour in approx:
+                # print(crop_i['ymin'], crop_i['xmin'])
+                one_contour[:,:,0]+=crop_i['xmin']
+                one_contour[:,:,1]+=crop_i['ymin']
+                # print(one_contour)
+                contours.append(one_contour)
+            # contours.append({"type": crop_i["type"], "contour": offset_approx})
+            # temp_img = crop_i['img'].permute(1,2,0).numpy()
+            # terminated = False
+            # if self.show_contour:
+                # cv2.drawContours(temp_img, approx, -1, (0, 255, 0), 1)
+                # cv2.imshow('Rectangles', temp_img)
+                # a = cv2.waitKey(0)
+                # if a == 27:
+                #     terminated = True
+                # cv2.destroyAllWindows()
+        if self.show_contour:
+            img = img if isinstance(img, torch.Tensor) else T.PILToTensor()(img)
+            img_array = np.array(img.permute(1, 2, 0))
+            img_array = cv2.cvtColor(img_array, cv2.COLOR_BGR2RGB)
+            # print(contours)
+            cv2.drawContours(img_array, contours, -1, (0, 255, 0), 1)
+            cv2.imshow('Rectangles', img_array)
+            a = cv2.waitKey(0)
+            if a == 27:
+                terminated = True
+            cv2.destroyAllWindows()
         return contours, terminated
 
     def __crop_bbox_region(self, img: Union[Image.Image, torch.Tensor], detection: Dict[str, torch.Tensor]) -> List[Dict[str, torch.Tensor]]:
@@ -64,14 +80,15 @@ class BaseSegmentWorke:
         cropped_imgs = []
         for i in range(N_OBJECTS):
             xmin, ymin, xmax, ymax = boxes[i]
-            xmin, ymin, xmax, ymax = max(xmin, 0), max(ymin, 0), min(xmax, img.size(2)), min(ymax, img.size(1))
-            cropped_imgs.append({"type": detection["labels"][i].item(), "img": img[:, ymin:ymax, xmin:xmax]})
+            xmin, ymin, xmax, ymax = max(xmin.item(), 0), max(ymin.item(), 0), min(xmax.item(), img.size(2)), min(ymax.item(), img.size(1))
+            cropped_imgs.append({"type": detection["labels"][i].item(), "img": img[:, ymin:ymax, xmin:xmax], 'xmin': xmin, 'ymin': ymin})
 
         return cropped_imgs
 
     def __segment(self, img: torch.Tensor) -> torch.Tensor:
         img_array = np.array(img.permute(1, 2, 0))
         gray = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
+        # gray = cv2.GaussianBlur(gray, (15, 15), 0)
         # cv2.imshow('Rectangles', gray)
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
