@@ -1,21 +1,23 @@
 '''
 原理可参考https://zhuanlan.zhihu.com/p/30033898
 '''
-import os
-import cv2
-import sys
-import math
-import glob
-import config
 import collections
+import glob
+import math
+import os
+import sys
+
+import config
+import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 import open3d as o3d
-import matplotlib.pyplot as plt
-from tqdm import tqdm
 from mayavi import mlab
-from scipy.linalg import lstsq
 from mpl_toolkits.mplot3d import Axes3D
+from scipy.linalg import lstsq
 from scipy.optimize import least_squares
+from tqdm import tqdm
+
 
 ##########################
 #两张图之间的特征提取及匹配

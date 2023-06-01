@@ -1,6 +1,8 @@
+from typing import List, Tuple
+
 import cv2
 import numpy as np
-from typing import List, Tuple
+
 
 def get_SIFT_features(image: np.array) -> Tuple[List, np.ndarray]:
     """

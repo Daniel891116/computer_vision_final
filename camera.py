@@ -1,8 +1,10 @@
-import numpy as np
 import os
-import cv2
-import yaml
 from typing import Dict
+
+import cv2
+import numpy as np
+import yaml
+
 
 class Camera:
     """

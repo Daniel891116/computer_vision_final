@@ -1,13 +1,16 @@
-import os 
+import os
+from typing import Dict, List, Tuple
+
 import cv2
-import torch
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import torch
 from PIL import Image
 from segment_cv2 import BaseSegmentWorke
-from utils.feature_utils import get_SIFT_features, get_SIFT_descriptor, filter_keypoints
-from typing import Dict, List, Tuple
+from utils.feature_utils import (filter_keypoints, get_SIFT_descriptor,
+                                 get_SIFT_features)
+
 
 class Frame():
     """

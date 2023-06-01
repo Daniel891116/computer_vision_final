@@ -1,16 +1,18 @@
-import torch
-from torchvision import transforms as T
-import numpy as np
-from PIL import Image
-import cv2
-from typing import Any, List, Union, Dict
-from matplotlib import pyplot as plt
-from matplotlib import patches
 import os
-from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
-from tqdm import tqdm
-from transformers import AutoImageProcessor, Mask2FormerForUniversalSegmentation, Mask2FormerImageProcessor
+from typing import Any, Dict, List, Union
 
+import cv2
+import numpy as np
+import torch
+from matplotlib import patches
+from matplotlib import pyplot as plt
+from PIL import Image
+from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
+from torchvision import transforms as T
+from tqdm import tqdm
+from transformers import (AutoImageProcessor,
+                          Mask2FormerForUniversalSegmentation,
+                          Mask2FormerImageProcessor)
 from utils.marker_utils import read_road_marker
 
 

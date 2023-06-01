@@ -1,6 +1,8 @@
-import torch
 from typing import Dict
+
 import numpy as np
+import torch
+
 
 def read_road_marker(marker_file: str) -> Dict[str, np.ndarray]:
     with open(marker_file, "r") as file:
