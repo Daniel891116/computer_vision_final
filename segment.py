@@ -11,7 +11,7 @@ from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 from tqdm import tqdm
 from transformers import AutoImageProcessor, Mask2FormerForUniversalSegmentation, Mask2FormerImageProcessor
 
-from tools import read_road_marker
+from utils.marker_utils import read_road_marker
 
 
 class BaseSegmentWorker:
@@ -197,9 +197,9 @@ class SegmentAnythingWorker(BaseSegmentWorker):
 
 
 if __name__ == "__main__":
-    segment_worker = SegmentAnythingWorker("checkpoint/sam_vit_b.pth")
+    segment_worker = SegmentAnythingWorker("checkpoint/sam_vit_h.pth")
 
-    frame_dir = "data/public/seq1/dataset/1681710717_571311700"
+    frame_dir = "ITRI_dataset/seq1/dataset/1681710717_571311700"
     img = Image.open(os.path.join(frame_dir, "raw_image.jpg"))
     detection = read_road_marker(os.path.join(frame_dir, "detect_road_marker.csv"))
 
