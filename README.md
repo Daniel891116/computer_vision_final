@@ -33,6 +33,13 @@
 
 ## Preperation
 
+### Environment
+```bash
+conda create -n cv python=3.9
+# You should press 'y' and 'enter'
+conda activate cv
+```
+
 ### Download data
 
 1. Public dataset
@@ -45,6 +52,26 @@
     - Press download
     - Move the downloaded zip file into `data` and unzip it
     - Rename the output folder to  `private`
+
+### Package Installation
+
+- [Segment Anything](https://github.com/facebookresearch/segment-anything)
+    1. Install package
+        ```bash
+        pip install git+https://github.com/facebookresearch/segment-anything.git
+        ```
+    2. Download model checkpoint (currently use ViT-H SAM model) and put them in the `checkpoint` folder
+- [Mask2Former](https://github.com/facebookresearch/Mask2Former)
+    1. Install package
+        ```bash
+        # detectron2
+        python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
+        ```
+- Other packages
+    ```bash
+    pip3 install -r requirements.txt
+    ```
+
 
 ## Related Informations
 
