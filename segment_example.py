@@ -33,7 +33,7 @@ for route in names:
     try:
         image = Image.open(image_route)
         # image = cv2.imread(image_route)
-        detection_file = pd.read_csv(detection_route)
+        detection_file = pd.read_csv(detection_route, header=None)
         detection_data = detection_file.values
         detection_data = np.stack([detection_data[i] for i in range(detection_data.shape[0]) if detection_data[i, 4]<args.detect_label_num])
         # print(detection_data.shape)

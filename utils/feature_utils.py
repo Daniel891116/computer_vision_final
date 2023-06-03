@@ -32,7 +32,7 @@ def get_SIFT_descriptor(image: np.array, contours: List) -> Tuple[List, np.ndarr
     sift = cv2.xfeatures2d.SIFT_create(0, 3, 0.04, 10)
     kps = contours_to_keypoints(contours)
     des = sift.compute(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), kps)
-    return kps, des
+    return des
 
 def filter_keypoints(keypoints: List, descriptors: np.ndarray, contours: List) -> Tuple[List, np.ndarray]:
     """

@@ -6,8 +6,9 @@ import glob
 import math
 import os
 import sys
-
+import pandas as pd
 import config
+import torch
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,7 +18,9 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy.linalg import lstsq
 from scipy.optimize import least_squares
 from tqdm import tqdm
-
+from PIL import Image
+from segment_cv2 import BaseSegmentWorke
+from utils.feature_utils import get_SIFT_descriptor
 
 ##########################
 #两张图之间的特征提取及匹配
@@ -35,13 +38,25 @@ def extract_features(image_names):
     descriptor_for_all = []
     colors_for_all = []
     for image_name in image_names:
-        image = cv2.imread(image_name)
+        image = Image.open(image_name)
+        # image = cv2.imread(image_name)
+        dir = os.path.dirname(image_name)
         # plt.title(image_name.split('/')[-2])
         # plt.imsave(f"test/{image_name.split('/')[-2]}.png", image)
         assert image is not None, f"{image_name}"
-        key_points, descriptor = sift.detectAndCompute(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), None)
+        segmentor = BaseSegmentWorke(eps_coef=0.02, thres=0.8, show_contour=False)
+        detect_label_num = 3
+        detection_data = pd.read_csv(os.path.join(dir, 'detect_road_marker.csv'), header=None).values
+        detection_data = np.stack([detection_data[i] for i in range(detection_data.shape[0]) if detection_data[i, 4]<detect_label_num])
+        detection_dict = {'boxes': torch.from_numpy(detection_data[:, :4]), 'labels': torch.from_numpy(detection_data[:, 4])}
+        contours, _ = segmentor(image, detection_dict)
+        image = np.asarray(image)
+        cv2.drawContours(image, contours, -1, (255, 0, 0), thickness=1)
+        # self.keypoints, self.descriptors = self.get_filtered_keypoints(visualize=True)
+        (key_points, descriptor) = get_SIFT_descriptor(image, contours)
+        # key_points, descriptor = sift.detectAndCompute(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), None)
 
-        img2 = cv2.drawKeypoints(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), key_points, None, flags=0)
+        img2 = cv2.drawKeypoints(image, key_points, None, flags=0)
         plt.imshow(img2)
         plt.show()
         key_points_for_all.append(key_points)
@@ -62,7 +77,6 @@ def match_features(query, train):
     for m, n in knn_matches:
         if m.distance < config.MRT * n.distance:
             matches.append(m)
-
     return np.array(matches)
 
 def match_all_features(descriptor_for_all):
@@ -292,12 +306,13 @@ def main():
     print(f"find {len(img_names)} frame of front camera")
     # K是摄像头的参数矩阵
     K = config.K
-    
+    img_names = img_names[0:50]
     key_points_for_all, descriptor_for_all, colors_for_all = extract_features(img_names)
     matches_for_all = match_all_features(descriptor_for_all)
     structure, correspond_struct_idx, colors, rotations, motions = init_structure(K, key_points_for_all, colors_for_all, matches_for_all)   
-    
+
     for i in tqdm(range(1, len(matches_for_all))):
+
         object_points, image_points = get_objpoints_and_imgpoints(matches_for_all[i], correspond_struct_idx[i], structure, key_points_for_all[i + 1])
         #在python的opencv中solvePnPRansac函数的第一个参数长度需要大于7，否则会报错
 		#这里对小于7的点集做一个重复填充操作，即用点集中的第一个点补满7个

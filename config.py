@@ -1,6 +1,7 @@
 import os
 import numpy as np
 
+camera_type = ['f', 'fl', 'fr', 'b']
 image_dir = 'ITRI_dataset/seq1/dataset'
 # image_dir = 'Herz-Jesus-P25/images/'
 # camera_file = 'Herz-Jesus-P25/images/K.txt'
@@ -15,7 +16,7 @@ K = np.array([
     [0.0, 662.758817961, 464.188882538],
     [0.0, 0.0, 1.0]
 ], dtype = np.float32)
-print(K)
+# print(K)
 #选择性删除所选点的范围。
 x = 0.5
 y = 1

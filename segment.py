@@ -206,8 +206,11 @@ if __name__ == "__main__":
     detection = read_road_marker(os.path.join(frame_dir, "detect_road_marker.csv"))
 
     contours = segment_worker(img, detection)
-
+    image = np.asarray(img)
     for k, v in contours.items():
+        image = cv2.drawContours(image, v, -1, (0, 255, 0), 1)
         print("type name:", k)
         for seg in v:
             print(seg.max(), seg.dtype, seg.shape)
+    plt.imshow(image)
+    plt.show()

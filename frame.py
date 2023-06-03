@@ -29,16 +29,20 @@ class Frame():
         self.camera = cameras[self.type]
         self.timestamp = float(dir.split('/')[-2].replace('_', '.'))
         self.image = Image.open(os.path.join(dir, 'raw_image.jpg'))
-        segmentor = BaseSegmentWorke(eps_coef=0.02, thres=0.8, show_contour=True)
+        segmentor = BaseSegmentWorke(eps_coef=0.02, thres=0.8, show_contour=False)
         detection_dict = self.prepare_detection_data()
         self.contours, _ = segmentor(self.image, detection_dict)
         self.image = np.asarray(self.image)
         # self.keypoints, self.descriptors = self.get_filtered_keypoints(visualize=True)
-        self.keypoints, self.descriptors = get_SIFT_descriptor(self.image, self.contours)
-            
+        (self.keypoints, self.descriptors) = get_SIFT_descriptor(self.image, self.contours)
+        self.matches = None
+
     def prepare_detection_data(self) -> Dict:
         detect_label_num = 3
-        detection_data = pd.read_csv(os.path.join(self.dir, 'detect_road_marker.csv')).values
+        try:
+            detection_data = pd.read_csv(os.path.join(self.dir, 'detect_road_marker.csv'), header=None).values
+        except pd.errors.EmptyDataError:
+            print(self.dir)
         detection_data = np.stack([detection_data[i] for i in range(detection_data.shape[0]) if detection_data[i, 4]<detect_label_num])
         return {'boxes': torch.from_numpy(detection_data[:, :4]), 'labels': torch.from_numpy(detection_data[:, 4])}
     
