@@ -45,13 +45,13 @@ class Reconstruct:
                 }
                 self.structures[type].append(data)
 
-        if not os.path.exists(f"./{self.seg_method}_pointclouds"):
-            os.makedirs(f"./{self.seg_method}_pointclouds")
-
         for type in config.camera_type:
+            if not os.path.exists(f"./{self.seg_method}_pointclouds/{type}"):
+                os.makedirs(f"./{self.seg_method}_pointclouds/{type}")
             # plt.imsave(f"{type}_0.png", self.structures[type][0]["debug_img"])
             for data in self.structures[type]:
-                savepcd(os.path.join(f"{self.seg_method}_pointclouds",f"{data['timestamp']}.ply"), numpy2pcd(self.structures[type][0]["pcd"]))
+                np.savetxt(os.path.join(f"{self.seg_method}_pointclouds",type,f"{data['timestamp']}.csv"), data['pcd'], delimiter=',')
+                # savepcd(os.path.join(f"{self.seg_method}_pointclouds",f"{data['timestamp']}.ply"), numpy2pcd(data["pcd"]))
 
     def __perspective_project(self, camera: Camera, keypoints: List, cameras: List, range) -> np.ndarray:
         """
@@ -122,7 +122,7 @@ class Reconstruct:
     
     
 if __name__ == '__main__':
-    reconstructor = Reconstruct("ITRI_dataset/seq1", "ITRI_dataset/camera_info/lucid_cameras_x00", seg_method='CV')
+    reconstructor = Reconstruct("ITRI_dataset/seq1", "ITRI_dataset/camera_info/lucid_cameras_x00", seg_method='SAM')
     
     # base_f = np.linalg.inv(reconstructor.sequence.cameras['f'].transform)
     # base_fl = np.linalg.inv(reconstructor.sequence.cameras['fl'].transform) @ base_f
