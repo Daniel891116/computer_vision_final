@@ -56,7 +56,7 @@ def main():
         pred_y = transformation[1,3]
         dxdy.append([pred_x, pred_y])
         # print(pred_x, pred_y)
-    np.savetxt(args.output_file, np.array(dxdy), delimiter=',', fmt='%f')
+    np.savetxt(args.output_file, np.array(dxdy), delimiter=' ', fmt='%f')
 
 if __name__ == "__main__":
     main()
