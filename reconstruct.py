@@ -8,7 +8,7 @@ import config
 from camera import Camera
 from sequence import Sequence
 from utils.pcd_utils import numpy2pcd, savepcd
-
+import argparse
 
 class Reconstruct:
     """
@@ -122,8 +122,18 @@ class Reconstruct:
     
     
 if __name__ == '__main__':
-    reconstructor = Reconstruct("ITRI_dataset/seq1", "ITRI_dataset/camera_info/lucid_cameras_x00", seg_method='SAM')
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--seq_dir_path", type=str,
+        help="seq path, some thing like /your/path/ITRI_dataset/seq1")
+    parser.add_argument("--camera_dir_path", type=str,
+        help="directory that contains the camera information. eg. ITRI_dataset/camera_info/lucid_cameras_x00")
+    parser.add_argument("--segent_method", type=str,
+        help="segmentation method applied to extract road marker. eg. [SAM|CV]")
+
     
+    args = parser.parse_args()
+    reconstructor = Reconstruct(args.seq_dir_path, args.camera_dir_path, seg_method=args.segent_method)
+    reconstructor('pinhole')
     # base_f = np.linalg.inv(reconstructor.sequence.cameras['f'].transform)
     # base_fl = np.linalg.inv(reconstructor.sequence.cameras['fl'].transform) @ base_f
     # base_fr = np.linalg.inv(reconstructor.sequence.cameras['fr'].transform) @ base_f
@@ -151,8 +161,4 @@ if __name__ == '__main__':
     #     savepcd(f"basis_fl_{axis}.ply", numpy2pcd(basis_fl[100*i:100*(i+1)]))
     #     savepcd(f"basis_fr_{axis}.ply", numpy2pcd(basis_fr[100*i:100*(i+1)]))
     #     savepcd(f"basis_b_{axis}.ply", numpy2pcd(basis_b[100*i:100*(i+1)]))
-
-    reconstructor('pinhole')
-
-    reconstructor('pinhole')
 
