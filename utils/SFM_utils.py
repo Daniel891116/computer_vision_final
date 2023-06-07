@@ -257,3 +257,5 @@ def fig_v2(structure, colors):
             mode = 'point', name = 'dinosaur', color = (colors[i][0], colors[i][1], colors[i][2]))
 
     mlab.show()
+
+

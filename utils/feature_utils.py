@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union, Dict
 
 import cv2
 import numpy as np
@@ -25,12 +25,21 @@ def contours_to_keypoints(contours: List) -> List[cv2.KeyPoint]:
             key_points.append(kp)
     return key_points
 
-def get_SIFT_descriptor(image: np.array, contours: List) -> Tuple[List, np.ndarray]:
+def get_SIFT_descriptor(image: np.array, contours: Union[List, Dict]) -> Tuple[List, np.ndarray]:
     """
     compute SIFT descriptors of given contours points
     """
     sift = cv2.xfeatures2d.SIFT_create(0, 3, 0.04, 10)
-    kps = contours_to_keypoints(contours)
+    if isinstance(contours, List):
+        kps = contours_to_keypoints(contours)
+    else:
+        kps = []
+        for k, v in contours.items():
+            if not len(v):
+                continue
+            for _v in v:
+                for p in _v:
+                    kps.append(cv2.KeyPoint(int(p[0]), int(p[1]), 1))
     des = sift.compute(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), kps)
     return des
 
