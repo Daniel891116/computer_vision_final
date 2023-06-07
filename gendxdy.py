@@ -4,9 +4,17 @@ import numpy as np
 from tqdm import tqdm
 from utils.pcd_utils import numpy2pcd
 from ITRI_DLC.ICP import ICP, csv_reader
+import argparse
 
 def main():
-    target_pcd_dir = "CV_pointclouds"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--target_pcd_dir", type=str,
+        help="target pointcloud path, eg. CV_pointclouds")
+    parser.add_argument("--output_file", type=str,
+        help="output dxdy file, eg. CV_submit.csv")
+
+    args = parser.parse_args()
+    target_pcd_dir = args.target_pcd_dir
     target_timestamps = dict()
     _target_timestamps = dict()
     for type in config.camera_type:
@@ -48,7 +56,7 @@ def main():
         pred_y = transformation[1,3]
         dxdy.append([pred_x, pred_y])
         # print(pred_x, pred_y)
-    np.savetxt("submit.csv", np.array(dxdy), delimiter=',')
+    np.savetxt(args.output_file, np.array(dxdy), delimiter=',', fmt='%f')
 
 if __name__ == "__main__":
     main()

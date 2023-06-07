@@ -50,7 +50,7 @@ class Reconstruct:
                 os.makedirs(f"./{self.seg_method}_pointclouds/{type}")
             # plt.imsave(f"{type}_0.png", self.structures[type][0]["debug_img"])
             for data in self.structures[type]:
-                np.savetxt(os.path.join(f"{self.seg_method}_pointclouds",type,f"{data['timestamp']}.csv"), data['pcd'], delimiter=',')
+                np.savetxt(os.path.join(f"{self.seg_method}_pointclouds",type,f"{data['timestamp']}.csv"), data['pcd'], delimiter=',', fmt='%f')
                 # savepcd(os.path.join(f"{self.seg_method}_pointclouds",f"{data['timestamp']}.ply"), numpy2pcd(data["pcd"]))
 
     def __perspective_project(self, camera: Camera, keypoints: List, cameras: List, range) -> np.ndarray:
