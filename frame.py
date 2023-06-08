@@ -39,7 +39,16 @@ class Frame():
             contour_file = os.path.join(self.dir, "contours.json")
             if os.path.exists(contour_file):
                 with open(contour_file, 'r') as f:
-                    self.contours = json.load(f)
+                    try:
+                        self.contours = json.load(f)
+                    except:
+                        detection_dict = read_road_marker(os.path.join(self.dir, "detect_road_marker.csv"))
+                        self.contours = segmentor(self.image, detection_dict)
+                        for key in self.contours.keys():
+                            for i in range(len(self.contours[key])):
+                                self.contours[key][i] = self.contours[key][i].tolist()
+                        with open(contour_file, 'w') as f:
+                            json.dump(self.contours, f, indent=4)
             else:
                 detection_dict = read_road_marker(os.path.join(self.dir, "detect_road_marker.csv"))
                 self.contours = segmentor(self.image, detection_dict)

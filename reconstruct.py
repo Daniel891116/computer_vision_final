@@ -127,7 +127,7 @@ if __name__ == '__main__':
         help="seq path, some thing like /your/path/ITRI_dataset/seq1")
     parser.add_argument("--camera_dir_path", type=str,
         help="directory that contains the camera information. eg. ITRI_dataset/camera_info/lucid_cameras_x00")
-    parser.add_argument("--segent_method", type=str,
+    parser.add_argument("--segment_method", type=str,
         help="segmentation method applied to extract road marker. eg. [SAM|CV]")
 
     
