@@ -10,9 +10,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--target_pcd_dir", type=str,
         help="target pointcloud path, eg. CV_pointclouds")
+    parser.add_argument("--seq_dir_path", type=str,
+        help="output dxdy file, eg. ITRI_dataset/seq1/")
     parser.add_argument("--output_file", type=str,
         help="output dxdy file, eg. CV_submit.csv")
-
+    
     args = parser.parse_args()
     target_pcd_dir = args.target_pcd_dir
     target_timestamps = dict()
@@ -21,9 +23,8 @@ def main():
         target_timestamps[type] = [t.split('.')[0] for t in sorted(os.listdir(os.path.join(target_pcd_dir, type)))]
         _target_timestamps[type] = np.array([float(t.replace('_', '.')) for t in target_timestamps[type]])
 
-    data_timestamps = "ITRI_dataset/seq1/localization_timestamp.txt"
     dxdy = []
-    with open(data_timestamps, 'r') as f:
+    with open(os.path.join(args.seq_dir_path, "localization_timestamp.txt"), 'r') as f:
         eval_times = f.readlines()
     for eval_time in tqdm(eval_times):
         eval_time = np.array([float(eval_time.replace('_', '.'))])
@@ -33,7 +34,7 @@ def main():
             eval_index = np.argmin(delta_times)
             eval_pcd_path = os.path.join(target_pcd_dir, type, target_timestamps[type][eval_index])
             # Target point cloud
-            target = csv_reader(f"ITRI_dataset/seq1/dataset/{target_timestamps[type][eval_index]}/sub_map.csv")
+            target = csv_reader(f"{args.seq_dir_path}/dataset/{target_timestamps[type][eval_index]}/sub_map.csv")
             target_pcd = numpy2pcd(target)
             # Source point cloud
             #TODO: Read your point cloud here#
@@ -48,7 +49,7 @@ def main():
         source_pcd = numpy2pcd(sources)
 
         # Initial pose
-        init_pose = csv_reader(f"ITRI_dataset/seq1/dataset/{target_timestamps[type][eval_index]}/initial_pose.csv")
+        init_pose = csv_reader(f"{args.seq_dir_path}/dataset/{target_timestamps[type][eval_index]}/initial_pose.csv")
 
         # Implement ICP
         transformation = ICP(source_pcd, target_pcd, threshold=0.02, init_pose=init_pose)

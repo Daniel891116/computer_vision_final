@@ -47,7 +47,7 @@ class Reconstruct:
                 self.structures[type].append(data)
 
         for type in config.camera_type:
-            save_dir = f"./{self.seq_dir.split['/'][-1]}/{self.seg_method}_pointclouds/{type}"
+            save_dir = f"./{self.seq_dir.split('/')[-1]}/{self.seg_method}_pointclouds/{type}"
             if not os.path.exists(save_dir):
                 os.makedirs(save_dir)
             # plt.imsave(f"{type}_0.png", self.structures[type][0]["debug_img"])
