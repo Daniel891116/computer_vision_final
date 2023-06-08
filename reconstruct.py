@@ -22,6 +22,7 @@ class Reconstruct:
             seg_method['CV'|'SAM']: method of segment road marker of frame, default = 'CV'
         """
         self.sequence = Sequence(seq_dir, camera_dir, seg_method)
+        self.seq_dir = seq_dir
         self.seg_method = seg_method
         self.all_structure = dict()
         self.structures = dict()
@@ -46,11 +47,12 @@ class Reconstruct:
                 self.structures[type].append(data)
 
         for type in config.camera_type:
-            if not os.path.exists(f"./{self.seg_method}_pointclouds/{type}"):
-                os.makedirs(f"./{self.seg_method}_pointclouds/{type}")
+            save_dir = f"./{self.seq_dir.split['/'][-1]}/{self.seg_method}_pointclouds/{type}"
+            if not os.path.exists(save_dir):
+                os.makedirs(save_dir)
             # plt.imsave(f"{type}_0.png", self.structures[type][0]["debug_img"])
             for data in self.structures[type]:
-                np.savetxt(os.path.join(f"{self.seg_method}_pointclouds",type,f"{data['timestamp']}.csv"), data['pcd'], delimiter=',', fmt='%f')
+                np.savetxt(os.path.join(save_dir,f"{data['timestamp']}.csv"), data['pcd'], delimiter=',', fmt='%f')
                 # savepcd(os.path.join(f"{self.seg_method}_pointclouds",f"{data['timestamp']}.ply"), numpy2pcd(data["pcd"]))
 
     def __perspective_project(self, camera: Camera, keypoints: List, cameras: List, range) -> np.ndarray:
@@ -132,7 +134,7 @@ if __name__ == '__main__':
 
     
     args = parser.parse_args()
-    reconstructor = Reconstruct(args.seq_dir_path, args.camera_dir_path, seg_method=args.segent_method)
+    reconstructor = Reconstruct(args.seq_dir_path, args.camera_dir_path, seg_method=args.segment_method)
     reconstructor('pinhole')
     # base_f = np.linalg.inv(reconstructor.sequence.cameras['f'].transform)
     # base_fl = np.linalg.inv(reconstructor.sequence.cameras['fl'].transform) @ base_f
