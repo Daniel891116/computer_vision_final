@@ -2,7 +2,7 @@ import os
 import config
 import numpy as np
 from tqdm import tqdm
-from utils.pcd_utils import numpy2pcd
+from utils.pcd_utils import numpy2pcd, visualize_pcds
 from ITRI_DLC.ICP import ICP, csv_reader
 import argparse
 
@@ -14,6 +14,8 @@ def main():
         help="output dxdy file, eg. ITRI_dataset/seq1/")
     parser.add_argument("--output_file", type=str,
         help="output dxdy file, eg. CV_submit.csv")
+    parser.add_argument("--visualize", type=bool,
+        help="whether to visualize the point clouds of each localization timestamp", default=False)
     
     args = parser.parse_args()
     target_pcd_dir = args.target_pcd_dir
@@ -26,6 +28,8 @@ def main():
     dxdy = []
     with open(os.path.join(args.seq_dir_path, "localization_timestamp.txt"), 'r') as f:
         eval_times = f.readlines()
+    if args.visualize:
+        all_pcds = []
     for eval_time in tqdm(eval_times):
         eval_time = np.array([float(eval_time.replace('_', '.'))])
         sources = []
@@ -47,7 +51,8 @@ def main():
             
         sources = np.concatenate(sources, axis = 0)
         source_pcd = numpy2pcd(sources)
-
+        if args.visualize:
+            all_pcds.append(source_pcd)
         # Initial pose
         init_pose = csv_reader(f"{args.seq_dir_path}/dataset/{target_timestamps[type][eval_index]}/initial_pose.csv")
 
@@ -58,7 +63,8 @@ def main():
         dxdy.append([pred_x, pred_y])
         # print(pred_x, pred_y)
     np.savetxt(args.output_file, np.array(dxdy), delimiter=' ', fmt='%f')
-
+    if args.visualize:
+        visualize_pcds(all_pcds)
 if __name__ == "__main__":
     main()
 
