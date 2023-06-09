@@ -28,8 +28,7 @@ def main():
     dxdy = []
     with open(os.path.join(args.seq_dir_path, "localization_timestamp.txt"), 'r') as f:
         eval_times = f.readlines()
-    if args.visualize:
-        all_pcds = []
+    all_pcds = []
     for eval_time in tqdm(eval_times):
         eval_time = np.array([float(eval_time.replace('_', '.'))])
         sources = []
@@ -48,11 +47,8 @@ def main():
                     source = np.expand_dims(source, axis=0)
                 sources.append(source)
             
-            
-        sources = np.concatenate(sources, axis = 0)
+        sources = np.concatenate(sources,axis = 0)
         source_pcd = numpy2pcd(sources)
-        if args.visualize:
-            all_pcds.append(source_pcd)
         # Initial pose
         init_pose = csv_reader(f"{args.seq_dir_path}/dataset/{target_timestamps[type][eval_index]}/initial_pose.csv")
 
@@ -61,10 +57,22 @@ def main():
         pred_x = transformation[0,3]
         pred_y = transformation[1,3]
         dxdy.append([pred_x, pred_y])
-        # print(pred_x, pred_y)
+        
+        #mutiply the transformation matrix of the ICP to the original point cloud data, see if it matches ground truth
+        one = np.ones((sources.shape[0],1), dtype=int)
+        sources = np.concatenate((sources,one),axis = 1)
+        transformed_sources = []
+        for row in sources:
+            reshaped_row = row.reshape(-1, 1)
+            transformed_row = np.matmul(transformation, reshaped_row)
+            transformed_sources.append(transformed_row.ravel())
+        sources_transformed = np.array(transformed_sources)
+        sources_transformed = sources_transformed[:, :3]
+        source_pcd = numpy2pcd(sources_transformed)
+        if args.visualize:
+            all_pcds.append(source_pcd)
     np.savetxt(args.output_file, np.array(dxdy), delimiter=' ', fmt='%f')
     if args.visualize:
-        visualize_pcds(all_pcds)
+        visualize_pcds(all_pcds,target_pcd)
 if __name__ == "__main__":
     main()
-
