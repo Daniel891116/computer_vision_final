@@ -165,4 +165,5 @@ checkpoint/
 mask/
 
 # Dataset
-ITRI_dataset/
+ITRI*/
+*.csv

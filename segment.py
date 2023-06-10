@@ -1,17 +1,19 @@
-import torch
-from torchvision import transforms as T
-import numpy as np
-from PIL import Image
-import cv2
-from typing import Any, List, Union, Dict
-from matplotlib import pyplot as plt
-from matplotlib import patches
 import os
-from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
-from tqdm import tqdm
-from transformers import AutoImageProcessor, Mask2FormerForUniversalSegmentation, Mask2FormerImageProcessor
+from typing import Any, Dict, List, Union
 
-from tools import read_road_marker
+import cv2
+import numpy as np
+import torch
+from matplotlib import patches
+from matplotlib import pyplot as plt
+from PIL import Image
+from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
+from torchvision import transforms as T
+from tqdm import tqdm
+from transformers import (AutoImageProcessor,
+                          Mask2FormerForUniversalSegmentation,
+                          Mask2FormerImageProcessor)
+from utils.marker_utils import read_road_marker
 
 
 class BaseSegmentWorker:
@@ -182,15 +184,18 @@ class SegmentAnythingWorker(BaseSegmentWorker):
 
 
 if __name__ == "__main__":
-    segment_worker = SegmentAnythingWorker("checkpoint/sam_vit_b.pth")
+    segment_worker = SegmentAnythingWorker("checkpoint/sam_vit_h.pth")
 
-    frame_dir = "data/public/seq1/dataset/1681710717_571311700"
+    frame_dir = "ITRI_dataset/seq1/dataset/1681710717_571311700"
     img = Image.open(os.path.join(frame_dir, "raw_image.jpg"))
     detection = read_road_marker(os.path.join(frame_dir, "detect_road_marker.csv"))
 
     contours = segment_worker(img, detection)
-
+    print(f"contours: {contours}")
+    image = np.asarray(img)
     for k, v in contours.items():
+        img = cv2.drawContours(image.copy(), v, -1, (0, 255, 0), 1)
         print("type name:", k)
         for seg in v:
             print(seg.max(), seg.dtype, seg.shape)
+        plt.imsave(f'segment_anything{k}.png', img)
