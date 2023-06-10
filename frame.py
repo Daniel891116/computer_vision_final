@@ -60,7 +60,7 @@ class Frame():
         
         self.image = np.asarray(self.image)
         # self.keypoints, self.descriptors = self.get_filtered_keypoints(visualize=True)
-        (self.keypoints, self.descriptors) = get_SIFT_descriptor(self.image, self.contours)
+        # (self.keypoints, self.descriptors) = get_SIFT_descriptor(self.image, self.contours)
         self.matches = None
         
 
