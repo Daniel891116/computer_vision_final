@@ -55,7 +55,7 @@ def main():
         init_pose = csv_reader(f"{args.seq_dir_path}/dataset/{target_timestamps[type][eval_index]}/initial_pose.csv")
 
         # Implement ICP
-        transformation = ICP(source_pcd, target_pcd, threshold=0.02, init_pose=init_pose)
+        transformation = ICP(source_pcd, target_pcd, threshold=1e-5, init_pose=init_pose)
         pred_x = transformation[0,3]
         pred_y = transformation[1,3]
         dxdy.append([pred_x, pred_y])

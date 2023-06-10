@@ -38,30 +38,56 @@ class Reconstruct:
         
     def __reconstruct(self) -> Dict[str, List]:
         print(f"reconstructing...\nmethod:[{self.seg_method}]")
-        for type in config.camera_type:
-            self.structures[type] = []
-            for frame in tqdm(self.sequence.frames[type]):
-                data = {
-                    "timestamp": frame.timestamp,
-                    "point_clouds": [],
-                }       
-                for k, contour_list in frame.contours.items():
-                    for i, contour in enumerate(contour_list):
+        if self.seg_method == 'SAM':
+            for type in config.camera_type:
+                self.structures[type] = []
+                for frame in tqdm(self.sequence.frames[type]):
+                    data = {
+                        "timestamp": frame.timestamp,
+                        "point_clouds": [],
+                    }
+                    for k, contour_list in frame.contours.items():
+                        for i, contour in enumerate(contour_list):
+                            points = self.__perspective_project(frame.camera, contour, self.sequence.cameras, 25)
+                            if points.shape == (0,):
+                                continue
+                            if points.ndim == 1:
+                                points = np.expand_dims(points, 0)
+                            point_cloud = {
+                                "label": k,
+                                "dummy_index": i,
+                                # "debug_img": cv2.drawContours(frame.image, frame.contours, -1, (255, 0, 0), 1),
+                                # "pcd": self.__perspective_project(frame.camera, frame.keypoints, self.sequence.cameras, 25),
+                                "points": points.tolist(),
+                                "contour": (points[:, :-1] * 10 + np.array([250, 250])).astype(np.int32).tolist()
+                            }
+                            data["point_clouds"].append(point_cloud)
+                    self.structures[type].append(data)
+        elif self.seg_method == 'CV':
+            for type in config.camera_type:
+                self.structures[type] = []
+                for frame in tqdm(self.sequence.frames[type]):
+                    data = {
+                        "timestamp": frame.timestamp,
+                        "point_clouds": [],
+                    }       
+                    for i, contour in enumerate(frame.contours):
                         points = self.__perspective_project(frame.camera, contour, self.sequence.cameras, 25)
                         if points.shape == (0,):
                             continue
                         if points.ndim == 1:
                             points = np.expand_dims(points, 0)
                         point_cloud = {
-                            "label": k,
-                            "dummy_index": i,
+                            # "dummy_index": i,
                             # "debug_img": cv2.drawContours(frame.image, frame.contours, -1, (255, 0, 0), 1),
                             # "pcd": self.__perspective_project(frame.camera, frame.keypoints, self.sequence.cameras, 25),
                             "points": points.tolist(),
                             "contour": (points[:, :-1] * 10 + np.array([250, 250])).astype(np.int32).tolist()
                         }
                         data["point_clouds"].append(point_cloud)
-                self.structures[type].append(data)
+                    self.structures[type].append(data)
+        else:
+            raise NotImplementedError
 
         for type in config.camera_type:
             save_dir = os.path.join(self.seq_dir.split('/')[-1], f"{self.seg_method}_pointclouds", type)
@@ -118,10 +144,10 @@ class Reconstruct:
         a33 = -1
         a34 = R[2][2]*CAMERA_HEIGHT-T[2]
         for kp in keypoints:
-            if not isinstance(kp, cv2.KeyPoint):
+            try:
                 [u, v] = kp
-            else:
-                (u, v) = kp.pt
+            except ValueError:
+                (u, v) = kp[0]
             a13 = -u
             a14 = fx*(R[0][2]*CAMERA_HEIGHT-T[0])+cx*(R[2][2]*CAMERA_HEIGHT-T[2])
             a23 = -v

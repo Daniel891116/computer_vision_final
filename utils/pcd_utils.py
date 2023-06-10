@@ -3,7 +3,7 @@ from typing import List, Dict
 import numpy as np
 import open3d as o3d
 import cv2
-from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 def numpy2pcd(arr):
     # turn numpy array into open3d point cloud format
@@ -44,15 +44,6 @@ def visualize_pcds(pcd_list: List[o3d.geometry.PointCloud], target_pcd: o3d.geom
             
             print(f"Saved image: {filename}")
 
-def get_multiple_pcd(pcd: str) -> Dict[str, List]:
-    """
-    Load the point clouds of different label that contained in the given directory
-
-    param: 
-        pcd_dir: the directory that contains the point clouds. eg. seq1/SAM_pointcloud/f/1681710717_535213596
-    return:
-        dict: dictionary of cloud of each label
-    """
 def compare_contour(cnt1, cnt2):
     """
     compare two contours, if the center of first contour is closer to the origin return True
@@ -81,17 +72,17 @@ def merge_pcd(pcd_dicts: List, iou_thres: float) -> np.array:
         all_pcd_dicts += pcds
     
     non_intersection = np.ones((len(all_pcd_dicts)), dtype = bool)
-    black = np.zeros((500, 500, 3))
+    black = np.zeros((500, 500, 3), dtype = np.uint8)
     for i in range(len(all_pcd_dicts)):
         if not non_intersection[i]:
             continue
-        query_contour = cv2.drawContours(black.copy(), [np.array(all_pcd_dicts[i]["contour"])], 0, (255, 255, 255), -1)
+        query_contour = cv2.drawContours(black.copy(), [np.array(all_pcd_dicts[i]["contour"])], 0, (255, 255, 255), thickness=cv2.FILLED)
         for j in range(i+1, len(all_pcd_dicts)):
             if not non_intersection[j]:
                 continue
-            if all_pcd_dicts[j]["type"] == all_pcd_dicts[j]["type"]:
+            if all_pcd_dicts[i]["type"] == all_pcd_dicts[j]["type"]:
                 continue
-            contour = cv2.drawContours(black.copy(), [np.array(all_pcd_dicts[j]["contour"])], 0, (255, 255, 255), -1)
+            contour = cv2.drawContours(black.copy(), [np.array(all_pcd_dicts[j]["contour"])], 0, (255, 255, 255), thickness=cv2.FILLED)
             iou = np.sum(np.logical_and(query_contour, contour)) / (np.sum(np.logical_or(query_contour, contour)))
             if iou > iou_thres:
                 if compare_contour(np.array(all_pcd_dicts[i]["contour"]), np.array(all_pcd_dicts[j]["contour"])):
