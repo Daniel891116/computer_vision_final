@@ -60,11 +60,11 @@ class Sequence():
         all_frame = dict()
         frame_dirs = sorted(glob.glob(os.path.join(seq_dir, "dataset", "*/")))
         for frame_dir in tqdm(frame_dirs):
-            try:
-                pd.read_csv(os.path.join(frame_dir, "detect_road_marker.csv"), header=None)
-            except pd.errors.EmptyDataError:
-                print("empty")
-                continue
+            # try:
+            #     pd.read_csv(os.path.join(frame_dir, "detect_road_marker.csv"), header=None)
+            # except pd.errors.EmptyDataError:
+            #     print("empty")
+            #     continue
             frame = Frame(frame_dir, self.cameras, self.segmentor)
             if frame.type not in all_frame.keys():
                 all_frame[frame.type] = [frame]
