@@ -48,13 +48,20 @@ def compare_contour(cnt1, cnt2):
     """
     compare two contours, if the center of first contour is closer to the origin return True
     """
-    M1 = cv2.moments(cnt1)
-    cX1 = int(M1["m10"] / max(M1["m00"], 1e-4))
-    cY1 = int(M1["m01"] / max(M1["m00"], 1e-4))
-    M2 = cv2.moments(cnt2)
-    cX2 = int(M2["m10"] / max(M2["m00"], 1e-4))
-    cY2 = int(M2["m01"] / max(M2["m00"], 1e04))
-    return (cX1**2+cY1**2) < (cX2**2+cY2**2)
+    A1 = cv2.contourArea(cnt1)
+    A2 = cv2.contourArea(cnt2)
+    if A1/A2 > 2:
+        return True
+    elif A1/A2 < 0.5:
+        return False
+    else:
+        M1 = cv2.moments(cnt1)
+        cX1 = int(M1["m10"] / max(M1["m00"], 1e-4))
+        cY1 = int(M1["m01"] / max(M1["m00"], 1e-4))
+        M2 = cv2.moments(cnt2)
+        cX2 = int(M2["m10"] / max(M2["m00"], 1e-4))
+        cY2 = int(M2["m01"] / max(M2["m00"], 1e04))
+        return (cX1**2+cY1**2) < (cX2**2+cY2**2)
 
 def merge_pcd(pcd_dicts: List, iou_thres: float) -> np.array:
     """
@@ -85,6 +92,11 @@ def merge_pcd(pcd_dicts: List, iou_thres: float) -> np.array:
             contour = cv2.drawContours(black.copy(), [np.array(all_pcd_dicts[j]["contour"])], 0, (255, 255, 255), thickness=cv2.FILLED)
             iou = np.sum(np.logical_and(query_contour, contour)) / (np.sum(np.logical_or(query_contour, contour)))
             if iou > iou_thres:
+                plt.imshow(
+                    cv2.drawContours(black.copy(), [np.array(all_pcd_dicts[i]["contour"])], 0, (255, 0, 0), thickness=cv2.FILLED)+\
+                    cv2.drawContours(black.copy(), [np.array(all_pcd_dicts[j]["contour"])], 0, (0, 255, 0), thickness=cv2.FILLED)
+                )
+                plt.show()
                 if compare_contour(np.array(all_pcd_dicts[i]["contour"]), np.array(all_pcd_dicts[j]["contour"])):
                     non_intersection[j] = False
                 else:
