@@ -17,6 +17,6 @@ def read_road_marker(marker_file: str) -> Dict[str, np.ndarray]:
 
     return {
         "labels": np.array(labels),
-        "boxes": np.array(boxes),
+        "boxes": np.array(boxes).reshape((-1, 4)),
         "scores": np.array(scores),
     }

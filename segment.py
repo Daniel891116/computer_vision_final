@@ -26,16 +26,11 @@ class BaseSegmentWorker:
 
     def __call__(self, img: Union[Image.Image, torch.Tensor], detection: Dict[str, np.ndarray]) -> Dict[str, List[np.ndarray]]:
         masks = self.segment(T.PILToTensor()(img), detection)
-        # return masks
 
-        # h, w = T.PILToTensor()(img).shape[1:]
-        # view = np.zeros((h, w))
-        # color = {"zebracross": "r", "stopline": "g", "arrow": "b", "junctionbox": ""}
         points = {}
         for type_name, segments in masks.items():
             contours = []
             for seg in segments:
-                # view += seg
                 contours.append(self.__find_contour(seg))
 
             point = []
@@ -43,19 +38,9 @@ class BaseSegmentWorker:
             for contour in contours:
                 contour = contour.reshape((-1, 2))
                 point.append(contour)
-                # plt.scatter(
-                #     contour[::5, 0],
-                #     contour[::5, 1],
-                #     s=2,
-                #     c=[self.TYPE.index(type_name)],
-                # )
+
             points[type_name] = point
         return points
-        # view = cv2.cvtColor(view.astype(np.uint8), cv2.COLOR_GRAY2RGB)
-        # plt.imshow(view)
-        # plt.title(type_name)
-        # plt.axis("off")
-        # plt.show()
 
     def segment(self, img: torch.Tensor, detection: Dict[str, np.ndarray]) -> Dict[str, List[np.ndarray]]:
         """
