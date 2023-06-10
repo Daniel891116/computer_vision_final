@@ -52,7 +52,7 @@ def compare_contour(cnt1, cnt2):
     A2 = cv2.contourArea(cnt2)
     if A1/A2 > 2:
         return True
-    elif A1/A2 < 0.5:
+    elif A2/A1 > 2:
         return False
     else:
         M1 = cv2.moments(cnt1)
@@ -61,7 +61,7 @@ def compare_contour(cnt1, cnt2):
         M2 = cv2.moments(cnt2)
         cX2 = int(M2["m10"] / max(M2["m00"], 1e-4))
         cY2 = int(M2["m01"] / max(M2["m00"], 1e04))
-        return (cX1**2+cY1**2) < (cX2**2+cY2**2)
+        return ((cX1-250)**2+(cY1-250)**2) < ((cX2-250)**2+(cY2-250)**2)
 
 def merge_pcd(pcd_dicts: List, iou_thres: float) -> np.array:
     """
@@ -98,8 +98,16 @@ def merge_pcd(pcd_dicts: List, iou_thres: float) -> np.array:
                 )
                 plt.show()
                 if compare_contour(np.array(all_pcd_dicts[i]["contour"]), np.array(all_pcd_dicts[j]["contour"])):
+                    plt.imshow(
+                        cv2.drawContours(black.copy(), [np.array(all_pcd_dicts[i]["contour"])], 0, (255, 0, 0), thickness=cv2.FILLED)
+                    )
+                    plt.show()
                     non_intersection[j] = False
                 else:
+                    plt.imshow(
+                        cv2.drawContours(black.copy(), [np.array(all_pcd_dicts[j]["contour"])], 0, (0, 255, 0), thickness=cv2.FILLED)
+                    )
+                    plt.show()
                     non_intersection[i] = False
                     break
     non_intersect_pcd = []
