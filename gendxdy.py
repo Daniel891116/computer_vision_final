@@ -3,7 +3,7 @@ import config
 import numpy as np
 from tqdm import tqdm
 from utils.pcd_utils import numpy2pcd, visualize_pcds, merge_pcd
-from ITRI_DLC.ICP import ICP, csv_reader
+from ITRI_DLC2.ICP import ICP, csv_reader
 import argparse
 import json
 
@@ -27,20 +27,20 @@ def main():
         _target_timestamps[type] = np.array([float(t.replace('_', '.')) for t in target_timestamps[type]])
     
     dxdy = []
-    with open(os.path.join(args.seq_dir_path, "localization_timestamp.txt"), 'r') as f:
+    with open(os.path.join("./ITRI_DLC2",args.seq_dir_path, "localization_timestamp.txt"), 'r') as f:
         eval_times = f.readlines()
     all_pcds = []
 
     for eval_time in tqdm(eval_times):
-        eval_time = np.array([float(eval_time.replace('_', '.'))])
+        eval_time_ = np.array([float(eval_time.replace('_', '.'))])
         sources = []
         for type in config.camera_type:
-            delta_times = np.abs(_target_timestamps[type] - eval_time)
+            delta_times = np.abs(_target_timestamps[type] - eval_time_)
             eval_index = np.argmin(delta_times)
             # Source point cloud
             eval_pcd_dir = os.path.join(target_pcd_dir, type, target_timestamps[type][eval_index])
             # Target point cloud
-            target = csv_reader(f"{args.seq_dir_path}/dataset/{target_timestamps[type][eval_index]}/sub_map.csv")
+            target = csv_reader(f"./ITRI_dataset/{args.seq_dir_path}/dataset/{target_timestamps[type][eval_index]}/sub_map.csv")
             target_pcd = numpy2pcd(target)
             # Source point cloud
             #TODO: Read your point cloud here#
@@ -52,10 +52,10 @@ def main():
         sources = merge_pcd(sources, 0.2)
         source_pcd = numpy2pcd(sources)
         # Initial pose
-        init_pose = csv_reader(f"{args.seq_dir_path}/dataset/{target_timestamps[type][eval_index]}/initial_pose.csv")
+        init_pose = csv_reader(f"./ITRI_DLC2/{args.seq_dir_path}/new_init_pose/{eval_time[:-1]}/initial_pose.csv")
 
         # Implement ICP
-        transformation = ICP(source_pcd, target_pcd, threshold=1e-5, init_pose=init_pose)
+        transformation = ICP(source_pcd, target_pcd, threshold=0.2, init_pose=init_pose)
         pred_x = transformation[0,3]
         pred_y = transformation[1,3]
         dxdy.append([pred_x, pred_y])
