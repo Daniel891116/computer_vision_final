@@ -17,7 +17,7 @@ class Reconstruct:
     """
     Reconstruct class create a object that reconstruct the 3D point cloud of road marker from a sequence of images based on pinhole model or SFM method.
     """
-    def __init__(self, seq_dir: str, camera_dir: str, seg_method: str='CV'):
+    def __init__(self, seq_dir: str, camera_dir: str, seg_method: str='CV', range: int=25):
         """
         params:
             seg_dir: directory that contains the sequence frame 
@@ -29,6 +29,7 @@ class Reconstruct:
         self.seg_method = seg_method
         self.all_structure = dict()
         self.structures = dict()
+        self.range = range
 
     def __call__(self, reconstruct_method='pinhole'):
         if reconstruct_method == 'pinhole':
@@ -48,7 +49,7 @@ class Reconstruct:
                     }
                     for k, contour_list in frame.contours.items():
                         for i, contour in enumerate(contour_list):
-                            points = self.__perspective_project(frame.camera, contour, self.sequence.cameras, 25)
+                            points = self.__perspective_project(frame.camera, contour, self.sequence.cameras, self.range)
                             if points.shape == (0,):
                                 continue
                             if points.ndim == 1:
@@ -90,7 +91,7 @@ class Reconstruct:
             raise NotImplementedError
 
         for type in config.camera_type:
-            save_dir = os.path.join(self.seq_dir.split('/')[-1], f"{self.seg_method}_pointclouds", type)
+            save_dir = os.path.join(self.seq_dir.split('/')[-1], f"{self.seg_method}_pointclouds_{self.range}", type)
             check_directory_valid(save_dir)
             # plt.imsave(f"{type}_0.png", self.structures[type][0]["debug_img"])
 
@@ -102,7 +103,7 @@ class Reconstruct:
                 # np.savetxt(os.path.join(_save_dir, f"{data['dummy_index']}.csv"), data['pcd'], delimiter=',', fmt='%f')
                 # savepcd(os.path.join(f"{self.seg_method}_pointclouds",f"{data['timestamp']}.ply"), numpy2pcd(data["pcd"]))
 
-    def __perspective_project(self, camera: Camera, keypoints: List[Union[List, cv2.KeyPoint]], cameras: List, range) -> np.ndarray:
+    def __perspective_project(self, camera: Camera, keypoints: List[Union[List, cv2.KeyPoint]], cameras: List, range: int) -> np.ndarray:
         """
         project the keypoints of image to z = -CAMERA_HEIGHT with respect to the base_link
 
@@ -180,12 +181,14 @@ if __name__ == '__main__':
         help="directory that contains the camera information. eg. ITRI_dataset/camera_info/lucid_cameras_x00")
     parser.add_argument("--segment_method", type=str,
         help="segmentation method applied to extract road marker. eg. [SAM|CV]")
+    parser.add_argument("--range", type=int,
+        help="range of reconstructed 3D points")
 
     
     args = parser.parse_args()
-    reconstructor = Reconstruct(args.seq_dir_path, args.camera_dir_path, seg_method=args.segment_method)
+    reconstructor = Reconstruct(args.seq_dir_path, args.camera_dir_path, seg_method=args.segment_method, range=args.range)
     reconstructor('pinhole')
-    # base_f = np.linalg.inv(reconstructor.sequence.cameras['f'].transform)
+    # base_f = np.linalg.inv(reconsctructor.sequence.cameras['f'].transform)
     # base_fl = np.linalg.inv(reconstructor.sequence.cameras['fl'].transform) @ base_f
     # base_fr = np.linalg.inv(reconstructor.sequence.cameras['fr'].transform) @ base_f
     # base_b = np.linalg.inv(reconstructor.sequence.cameras['b'].transform) @\

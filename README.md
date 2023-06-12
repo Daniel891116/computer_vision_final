@@ -97,7 +97,8 @@ This would generate a directory that contains the point clouds of each camera of
 
 After generated corresponding point clouds of given timestamps, this step will calculate the dx and dy of each frame using [ICP](https://zhuanlan.zhihu.com/p/107218828) method base on the sub_map.csv file in the dataset. **Notice** if visualize is set to true, it would create a window that shows the point cloud.
 ```bash
-python3 gendxdy.py --target_pcd_dir ./seq1/CV_pointclouds --output_file solution/seq1/pred_pose.txt --seq_dir_path seq1 --visualize True```
+python3 gendxdy.py --target_pcd_dir ./seq1/CV_pointclouds --output_file solution/seq1/pred_pose.txt --seq_dir_path seq1 --visualize True
+```
 
 ## Related Informations
 

@@ -43,6 +43,23 @@ def visualize_pcds(pcd_list: List[o3d.geometry.PointCloud], target_pcd: o3d.geom
             vis.destroy_window()
             
             print(f"Saved image: {filename}")
+            
+def csv_reader(filename):
+    # read csv file into numpy array
+    data = np.loadtxt(filename, delimiter=',')
+    return data
+
+def ICP(source, target, threshold, init_pose, iteration=30):
+    # implement iterative closet point and return transformation matrix
+    reg_p2p = o3d.pipelines.registration.registration_icp(
+        source, target, threshold, init_pose,
+        estimation_method = o3d.pipelines.registration.TransformationEstimationPointToPoint(),
+        criteria = o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=iteration)
+    )
+    print(reg_p2p)
+    assert len(reg_p2p.correspondence_set) != 0, 'The size of correspondence_set between your point cloud and sub_map should not be zero.'
+    print(reg_p2p.transformation)
+    return reg_p2p.transformation
 
 def compare_contour(cnt1, cnt2):
     """
@@ -50,9 +67,9 @@ def compare_contour(cnt1, cnt2):
     """
     A1 = cv2.contourArea(cnt1)
     A2 = cv2.contourArea(cnt2)
-    if A1/A2 > 2:
+    if A1/max(A2, 1e-4) > 2:
         return True
-    elif A2/A1 > 2:
+    elif A2/max(A1, 1e-4) > 2:
         return False
     else:
         M1 = cv2.moments(cnt1)

@@ -2,8 +2,8 @@ import os
 import config
 import numpy as np
 from tqdm import tqdm
-from utils.pcd_utils import numpy2pcd, visualize_pcds, merge_pcd
-from ITRI_DLC2.ICP import ICP, csv_reader
+from utils.pcd_utils import numpy2pcd, visualize_pcds, merge_pcd, ICP, csv_reader
+from utils.path_utils import check_directory_valid
 import argparse
 import json
 from scipy.interpolate import UnivariateSpline
@@ -52,7 +52,7 @@ def main():
                 source["type"] = type
             sources.append(source)
             
-        sources = merge_pcd(sources, 0.2)
+        sources = merge_pcd(sources, 0.7)
         source_pcd = numpy2pcd(sources)
         # Initial pose
         init_pose = csv_reader(f"./ITRI_DLC2/{args.seq_dir_path}/new_init_pose/{eval_time[:-1]}/initial_pose.csv")
@@ -126,6 +126,6 @@ def main():
     plt.savefig("smoothing.png")
     np.savetxt(args.output_file, smoothed_data, delimiter=' ', fmt='%f')
     if args.visualize:
-        visualize_pcds(all_pcds,target_pcd)
+        visualize_pcds(all_pcds, target_pcd)
 if __name__ == "__main__":
     main()
