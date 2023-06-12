@@ -1,15 +1,17 @@
-import os
-import config
-import numpy as np
-from tqdm import tqdm
-from utils.pcd_utils import numpy2pcd, visualize_pcds, merge_pcd, ICP, csv_reader
-from utils.path_utils import check_directory_valid
 import argparse
 import json
-from scipy.interpolate import UnivariateSpline
-from scipy.ndimage import gaussian_filter
+import os
+
+import numpy as np
 from scipy.ndimage import gaussian_filter1d
-import matplotlib.pyplot as plt
+from tqdm import tqdm
+
+import config
+from utils.path_utils import check_directory_valid
+from utils.pcd_utils import (ICP, csv_reader, merge_pcd, numpy2pcd,
+                             visualize_pcds)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--target_pcd_dir", type=str,
@@ -92,8 +94,6 @@ def main():
     # Combine them back
     smoothed_data = np.column_stack((smoothed_x, smoothed_y))
 
-# Separate x and y
-
     # def causal_gaussian_filter1d(data, sigma):
     #     result = np.zeros_like(data)
     #     kernel_radius = int(3.0 * sigma + 0.5)  # Define the size of the kernel
@@ -116,11 +116,10 @@ def main():
     # # Combine them back
     # causal_smoothed_data = np.column_stack((causal_smoothed_x, causal_smoothed_y))
 
-    # plt.plot(smoothed_x, smoothed_y)
-    # plt.savefig("smoothing.png")
     check_directory_valid(os.path.dirname(args.output_file))
     np.savetxt(args.output_file, smoothed_data, delimiter=' ', fmt='%f')
     if args.visualize:
         visualize_pcds(all_pcds, target_pcd)
+        
 if __name__ == "__main__":
     main()

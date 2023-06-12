@@ -1,17 +1,18 @@
 import glob
 import os
-import cv2
 from typing import Dict, List
-import config
-import matplotlib.pyplot as plt
+
+import cv2
 import pandas as pd
+from tqdm import tqdm
+
+import config
 from camera import Camera
 from frame import Frame
-from tqdm import tqdm
-from utils.pcd_utils import numpy2pcd, savepcd
-from utils.SFM_utils import match_all_features
 from segment import SegmentAnythingWorker
 from segment_cv2 import BaseSegmentWorke
+from utils.SFM_utils import match_all_features
+
 
 class Sequence():
     """
@@ -88,6 +89,9 @@ if __name__ == '__main__':
     print(seq.frames['fl'][0].camera)
     frame = seq.frames['f'][1]
 
+    img = cv2.drawKeypoints(frame.image, frame.keypoints, None, flags=0)
+    # plt.imshow(img)
+    # plt.show()
     img = cv2.drawKeypoints(frame.image, frame.keypoints, None, flags=0)
     # plt.imshow(img)
     # plt.show()

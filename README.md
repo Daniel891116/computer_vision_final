@@ -85,19 +85,24 @@ reconstruct the point cloud file of each sequence of dataset. (Get more informat
 python3 reconstruct --seq_dir ITRI_dataset/seq1 --camera_dir_path ITRI_dataset/camera_info/lucid_cameras_x00 --segment_method SAM
 ```
 
-This would generate a directory that contains the point clouds of each camera of each sequence.Below is the structure of generated directory
+This would generate a directory that contains the point clouds of each camera of each sequence. Below is the structure of generated directory
 
-    SAM_pointclouds
-    ├── b
-    │   ├──timestamps.csv
-    │   └──...
-    ├── f
-    ├── fl
-    └── fr
+    [sequence name]
+    ├── [segment_method]_pointclouds_[range]
+    │   ├── b
+    │   │   ├──[timestamps].csv
+    │   │   └──...
+    │   ├── f
+    │   ├── fl
+    │   └── fr
 
-After generated corresponding point clouds of given timestamps, this step will calculate the dx and dy of each frame using [ICP](https://zhuanlan.zhihu.com/p/107218828) method base on the sub_map.csv file in the dataset. **Notice** if visualize is set to true, it would create a window that shows the point cloud.
+After generating corresponding point clouds of given timestamps, this step will calculate the dx and dy of each frame using [ICP](https://zhuanlan.zhihu.com/p/107218828) method base on the sub_map.csv file in the dataset. **Notice** if visualize is set to true, it would create a window that shows the point cloud.
 ```bash
-python3 gendxdy.py --target_pcd_dir ./seq1/CV_pointclouds --output_file solution/seq1/pred_pose.txt --seq_dir_path seq1 --visualize True
+python3 gendxdy.py --target_pcd_dir ./seq1/CV_pointclouds --output_file solution/seq1/pred_pose.txt --seq_dir_path seq1 --visualize
+```
+After generating prediction position, we provide a function to visualize your predicted trajectory. This function will 
+```bash
+python3 viz_trajectory.py solution/seq1/pred_pose_25.txt
 ```
 
 ## Related Informations

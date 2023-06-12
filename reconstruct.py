@@ -1,17 +1,17 @@
+import argparse
+import json
 import os
-import cv2
 from typing import Dict, List, Union
 
+import cv2
 import numpy as np
 from tqdm import tqdm
 
 import config
 from camera import Camera
 from sequence import Sequence
-from utils.pcd_utils import numpy2pcd, savepcd
 from utils.path_utils import check_directory_valid
-import argparse
-import json
+
 
 class Reconstruct:
     """
@@ -215,4 +215,5 @@ if __name__ == '__main__':
     #     savepcd(f"basis_fl_{axis}.ply", numpy2pcd(basis_fl[100*i:100*(i+1)]))
     #     savepcd(f"basis_fr_{axis}.ply", numpy2pcd(basis_fr[100*i:100*(i+1)]))
     #     savepcd(f"basis_b_{axis}.ply", numpy2pcd(basis_b[100*i:100*(i+1)]))
+
 
