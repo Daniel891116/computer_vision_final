@@ -43,7 +43,7 @@ def main():
             # Source point cloud
             eval_pcd_dir = os.path.join(target_pcd_dir, type, target_timestamps[type][eval_index])
             # Target point cloud
-            target = csv_reader(f"./ITRI_dataset/{args.seq_dir_path}/dataset/{target_timestamps[type][eval_index]}/sub_map.csv")
+            target = csv_reader(f"./ITRI_DLC/{args.seq_dir_path}/dataset/{target_timestamps[type][eval_index]}/sub_map.csv")
             target_pcd = numpy2pcd(target)
             # Source point cloud
             #TODO: Read your point cloud here#
@@ -76,7 +76,7 @@ def main():
         if args.visualize:
             all_pcds.append(source_pcd)
     dxdy = np.array(dxdy)
-    print(dxdy.shape)
+    # print(dxdy.shape)
     # sorted_indices = np.argsort(dxdy[:,0])
     # sorted_x = dxdy[sorted_indices,0]
     # sorted_y = dxdy[sorted_indices,1]
@@ -92,13 +92,7 @@ def main():
     # Combine them back
     smoothed_data = np.column_stack((smoothed_x, smoothed_y))
 
-
-# Your data
-# data = np.random.rand(619, 2)  # Just for example, replace with your actual data
-
 # Separate x and y
-    x = dxdy[:, 0]
-    y = dxdy[:, 1]
 
     # def causal_gaussian_filter1d(data, sigma):
     #     result = np.zeros_like(data)
@@ -122,8 +116,9 @@ def main():
     # # Combine them back
     # causal_smoothed_data = np.column_stack((causal_smoothed_x, causal_smoothed_y))
 
-    plt.plot(smoothed_x, smoothed_y)
-    plt.savefig("smoothing.png")
+    # plt.plot(smoothed_x, smoothed_y)
+    # plt.savefig("smoothing.png")
+    check_directory_valid(os.path.dirname(args.output_file))
     np.savetxt(args.output_file, smoothed_data, delimiter=' ', fmt='%f')
     if args.visualize:
         visualize_pcds(all_pcds, target_pcd)

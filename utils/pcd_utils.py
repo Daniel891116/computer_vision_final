@@ -56,9 +56,9 @@ def ICP(source, target, threshold, init_pose, iteration=30):
         estimation_method = o3d.pipelines.registration.TransformationEstimationPointToPoint(),
         criteria = o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=iteration)
     )
-    print(reg_p2p)
+    # print(reg_p2p)
     assert len(reg_p2p.correspondence_set) != 0, 'The size of correspondence_set between your point cloud and sub_map should not be zero.'
-    print(reg_p2p.transformation)
+    # print(reg_p2p.transformation)
     return reg_p2p.transformation
 
 def compare_contour(cnt1, cnt2):
