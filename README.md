@@ -45,13 +45,18 @@ conda activate cv
 1. Public dataset
     - Go to https://140.112.48.121:25251/sharing/Lw8QTICUf
     - Press download
-    - Move the downloaded zip file into `data` and unzip it
-    - Rename the output folder to  `public`
+    - Move the zip file into the repository folder and unzip it
+    - Rename the output folder to  `ITRI_dataset`
 2. Private dataset:
     - Go to https://140.112.48.121:25251/sharing/PyViYwNsv
     - Press download
-    - Move the downloaded zip file into `data` and unzip it
-    - Rename the output folder to  `private`
+    - Move the zip file into the repository folder and unzip it
+    - Rename the output folder to  `ITRI_DLC`
+3. Updated init_pose
+    - Go to https://140.112.48.121:25251/sharing/Gb5NhrV3v
+    - Press download
+    - Move the zip file into the repository folder and unzip it
+    - Rename the output folder to  `ITRI_DLC2`
 
 ### Package Installation
 
