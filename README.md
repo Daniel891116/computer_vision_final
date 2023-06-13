@@ -80,7 +80,7 @@ Replace `[seq_name]` with the name of the sequence and `[segment_method]` with t
     │   ├── fl
     │   └── fr
 
-After generating the point clouds, you can calculate the dx and dy of each frame using the [ICP]((https://zhuanlan.zhihu.com/p/107218828)) method based on the sub_map.csv file in the dataset. Use the following command:
+After generating the point clouds, you can calculate the dx and dy of each frame using the [ICP]((https://zhuanlan.zhihu.com/p/107218828)) method (threshold: 0.7, iteration: 30) based on the sub_map.csv file in the dataset. Use the following command:
 
 ```bash
 python3 gendxdy.py --target_pcd_dir ./[seq_name]/[segment_method]_pointclouds_[range] --output_file solution/[seq_name]/pred_pose.txt --seq_dir_path [seq_name] --visualize
