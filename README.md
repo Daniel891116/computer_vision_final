@@ -20,7 +20,7 @@
 
 `Frame-wise` 3D point cloud per camera
 
-3. Merge views: Merge single-view 3D point clouds to one (`葉`)
+3. Merge views: Merge single-view 3D point clouds to one (`葉`, `黃`)
     - base_link methods
 
 `Merged frame-wise` 3D point cloud
@@ -65,7 +65,7 @@ conda activate cv
         ```bash
         pip install git+https://github.com/facebookresearch/segment-anything.git
         ```
-    2. Download model checkpoint (currently use ViT-H SAM model) and put them in the `checkpoint` folder
+    2. Download model checkpoint (currently use ViT-H SAM model) [link](https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth) and put them in the `checkpoint` folder
 - [Mask2Former](https://github.com/facebookresearch/Mask2Former)
     1. Install package
         ```bash
