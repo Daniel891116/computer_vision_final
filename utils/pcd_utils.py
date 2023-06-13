@@ -110,9 +110,10 @@ def merge_pcd(pcd_dicts: List, iou_thres: float) -> Tuple[np.array, int]:
             contour = cv2.drawContours(black.copy(), [np.array(all_pcd_dicts[j]["contour"])], 0, (255, 255, 255), thickness=cv2.FILLED)
             iou = np.sum(np.logical_and(query_contour, contour)) / (np.sum(np.logical_or(query_contour, contour)))
             if iou > iou_thres:
+
                 # plt.imshow(
-                #     cv2.drawContours(black.copy(), [np.array(all_pcd_dicts[i]["contour"])], 0, (255, 0, 0), thickness=cv2.FILLED)+\
-                #     cv2.drawContours(black.copy(), [np.array(all_pcd_dicts[j]["contour"])], 0, (0, 255, 0), thickness=cv2.FILLED)
+                #     (cv2.drawContours(black.copy(), [np.array(all_pcd_dicts[i]["contour"])], 0, (255, 0, 0), thickness=cv2.FILLED)+\
+                #     cv2.drawContours(black.copy(), [np.array(all_pcd_dicts[j]["contour"])], 0, (0, 255, 0), thickness=cv2.FILLED))//2
                 # )
                 # plt.show()
                 if compare_contour(np.array(all_pcd_dicts[i]["contour"]), np.array(all_pcd_dicts[j]["contour"])):

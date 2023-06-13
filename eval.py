@@ -9,16 +9,11 @@ def calculate_dist(label, pred):
     dist = np.mean(dist)
     return dist
 
-
-
-def benchmark(dataset_path, sequences, pred_path):
-    for seq in sequences[0:1]:
-        label = np.loadtxt(os.path.join(dataset_path, seq, 'gt_pose.txt'))
-        pred = np.loadtxt(os.path.join(pred_path), delimiter=' ')  #TODO: Enter your filename here#
-        score = calculate_dist(label, pred)
-        print(f'Mean Error of {seq}: {score:.5f}')
+def benchmark(gt_path, pred_path):
+    label = np.loadtxt(gt_path)
+    pred = np.loadtxt(os.path.join(pred_path), delimiter=' ')  #TODO: Enter your filename here#
+    score = calculate_dist(label, pred)
+    print(f'Mean Error of {gt_path.split("/")[1]}: {score:.5f}')
 
 if __name__ == '__main__':
-    dataset_path = 'ITRI_DLC2'
-    sequences = ['seq1', 'seq2', 'seq3']
-    benchmark(dataset_path, sequences, sys.argv[1])
+    benchmark(sys.argv[1], sys.argv[2])

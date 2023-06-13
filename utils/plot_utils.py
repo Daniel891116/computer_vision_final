@@ -1,5 +1,4 @@
 import argparse
-import os
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,11 +10,14 @@ def visualize_trajectory(pred_file: str, smoothed: bool):
     smoothed_x = gaussian_filter1d(data[:, 0], sigma=8)
     smoothed_y = gaussian_filter1d(data[:, 1], sigma=8)
     c = range(data.shape[0])
-    plt.title(os.path.basename(pred_file))
-    plt.scatter(data[:, 0], data[:, 1], s=1, c = c, alpha=1, cmap = 'Reds')
+    
     if smoothed:
+        plt.title("smoothed trajectory")
         plt.scatter(smoothed_x, smoothed_y, s=1, c = c, alpha=1, cmap = 'Blues')
-    plt.savefig(f"{pred_file.split('.')[0]}.png")
+    else:
+        plt.title("raw trajectory")
+        plt.scatter(data[:, 0], data[:, 1], s=1, c = c, alpha=1, cmap = 'Reds')
+    # plt.savefig(f"{pred_file.split('.')[0]}.png")
     plt.show()    
     
 if __name__ == '__main__':
