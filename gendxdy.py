@@ -20,7 +20,7 @@ def main():
         help="output dxdy file, eg. ITRI_dataset/seq1/")
     parser.add_argument("--output_file", type=str,
         help="output dxdy file, eg. CV_submit.csv")
-    parser.add_argument("--visualize", type=bool,
+    parser.add_argument("--visualize", action='store_true',
         help="whether to visualize the point clouds of each localization timestamp", default=False)
     
     args = parser.parse_args()
@@ -32,11 +32,11 @@ def main():
         _target_timestamps[type] = np.array([float(t.replace('_', '.')) for t in target_timestamps[type]])
     
     dxdy = []
-    with open(os.path.join("./ITRI_DLC2",args.seq_dir_path, "localization_timestamp.txt"), 'r') as f:
+    with open(os.path.join("./ITRI_dataset",args.seq_dir_path, "localization_timestamp.txt"), 'r') as f:
         eval_times = f.readlines()
     all_pcds = []
-
-    for eval_time in tqdm(eval_times):
+    pbar = tqdm(total=len(eval_times))
+    for eval_time in eval_times:
         eval_time_ = np.array([float(eval_time.replace('_', '.'))])
         sources = []
         for type in config.camera_type:
@@ -45,7 +45,7 @@ def main():
             # Source point cloud
             eval_pcd_dir = os.path.join(target_pcd_dir, type, target_timestamps[type][eval_index])
             # Target point cloud
-            target = csv_reader(f"./ITRI_DLC/{args.seq_dir_path}/dataset/{target_timestamps[type][eval_index]}/sub_map.csv")
+            target = csv_reader(f"./ITRI_dataset/{args.seq_dir_path}/dataset/{target_timestamps[type][eval_index]}/sub_map.csv")
             target_pcd = numpy2pcd(target)
             # Source point cloud
             #TODO: Read your point cloud here#
@@ -54,10 +54,11 @@ def main():
                 source["type"] = type
             sources.append(source)
             
-        sources = merge_pcd(sources, 0.7)
+        sources, removed_contour_number = merge_pcd(sources, 0.7)
+        pbar.set_description(f"remove {removed_contour_number} contour")
         source_pcd = numpy2pcd(sources)
         # Initial pose
-        init_pose = csv_reader(f"./ITRI_DLC2/{args.seq_dir_path}/new_init_pose/{eval_time[:-1]}/initial_pose.csv")
+        init_pose = csv_reader(f"./ITRI_dataset/{args.seq_dir_path}/new_init_pose/{eval_time[:-1]}/initial_pose.csv")
 
         # Implement ICP
         transformation = ICP(source_pcd, target_pcd, threshold=0.7, init_pose=init_pose)
@@ -77,6 +78,7 @@ def main():
         source_pcd = numpy2pcd(sources_transformed)
         if args.visualize:
             all_pcds.append(source_pcd)
+        pbar.update(1)
     dxdy = np.array(dxdy)
     # print(dxdy.shape)
     # sorted_indices = np.argsort(dxdy[:,0])

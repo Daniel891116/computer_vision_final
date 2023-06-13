@@ -1,98 +1,77 @@
 # 3D Reconstruction from Road Marker Feature Points
 
+This repository contains the code for performing 3D reconstruction from road marker feature points. The pipeline consists of several steps, including segmentation, 3D reconstruction, merging views, and refinement. This readme provides instructions on how to use the code and prepare the environment.
+
 ## Pipeline
 
-`Image` + `object bounding box` (predicted by pretrained Yolo network)
+The pipeline consists of the following steps:
 
-1. Segmentation: For one bounding boux (zebracross/stopline)
-    - Crop bounding box region from image
-    - Instance segmentation
-        1. threshold + inRange (`南`)
-        2. Segment anything  (`傅`)
-    - Find contour
-    - Approx Poly DP
+1. Segmentation: This step involves segmenting the road marker region from an image. It includes cropping the bounding box region, instance segmentation, finding contours, and approximating polygonal curves.
 
-`Four corner points` (zerbracross) or `points on a line` (stopline)
+2. 3D Reconstruction: The segmented feature points are used for 3D reconstruction. The pipeline currently supports two methods: structure from motion and pinhole modeling.
 
-2. 3D reconstruction:
-    - `Structure from motion` (Currently used) (`黃`)
-    - Pinhole modeling
+3. Merge Views: The single-view 3D point clouds are merged into one to create a more complete representation.
 
-`Frame-wise` 3D point cloud per camera
+4. Refinement: The estimated 3D point cloud is refined using time series data, acceleration, and velocity information.
 
-3. Merge views: Merge single-view 3D point clouds to one (`葉`, `黃`)
-    - base_link methods
-
-`Merged frame-wise` 3D point cloud
-
-4. Refinement: Using the following datas and information to refine the estimated 3D point cloud (`蔡`)
-    - Time series data
-    - Acceleration and velocity
-
-`Refined and merged frame-wise` 3D point cloud
-
-## Preperation
+## Preparation
 
 ### Environment
+
+To set up the environment, follow these steps:
+
 ```bash
 conda create -n cv python=3.9
-# You should press 'y' and 'enter'
 conda activate cv
 ```
 
-### Download data
+### Clone Repository
 
-1. Public dataset
-    - Go to https://140.112.48.121:25251/sharing/Lw8QTICUf
-    - Press download
-    - Move the zip file into the repository folder and unzip it
-    - Rename the output folder to  `ITRI_dataset`
-2. Private dataset:
-    - Go to https://140.112.48.121:25251/sharing/PyViYwNsv
-    - Press download
-    - Move the zip file into the repository folder and unzip it
-    - Rename the output folder to  `ITRI_DLC`
-3. Updated init_pose
-    - Go to https://140.112.48.121:25251/sharing/Gb5NhrV3v
-    - Press download
-    - Move the zip file into the repository folder and unzip it
-    - Rename the output folder to  `ITRI_DLC2`
+Clone the repository and navigate to the `computer_vision_final` directory:
 
-### Package Installation
-
-- [Segment Anything](https://github.com/facebookresearch/segment-anything)
-    1. Install package
-        ```bash
-        pip install git+https://github.com/facebookresearch/segment-anything.git
-        ```
-    2. Download model checkpoint (currently use ViT-H SAM model) [link](https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth) and put them in the `checkpoint` folder
-- [Mask2Former](https://github.com/facebookresearch/Mask2Former)
-    1. Install package
-        ```bash
-        # detectron2
-        python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
-        ```
-- Other packages
-    ```bash
-    pip3 install -r requirements.txt
-    ```
-
-## Usage
-
-cloning our repository and go into the computer_vision_final directory.
 ```bash
 git clone https://github.com/Daniel891116/computer_vision_final.git
 cd computer_vision_final
 ```
 
-reconstruct the point cloud file of each sequence of dataset. (Get more information about dataset in the next section.)
+### Download Data
+
+Download the dataset from the following link: [Dataset Link](https://drive.google.com/file/d/19jDCQhw3pUMERftAxQjz7p9JOzpuNw4A/view?usp=drive_link)
+
+After downloading the zip file, move it to the repository folder and unzip it. Rename the output folder to `ITRI_dataset`.
+
+### Package Installation
+
+Install the required packages by running the following command:
+
 ```bash
-python3 reconstruct --seq_dir ITRI_dataset/seq1 --camera_dir_path ITRI_dataset/camera_info/lucid_cameras_x00 --segment_method SAM
+pip3 install -r requirements.txt
 ```
 
-This would generate a directory that contains the point clouds of each camera of each sequence. Below is the structure of generated directory
+Additionally, install the following packages:
 
-    [sequence name]
+- [Segment Anything](https://github.com/facebookresearch/segment-anything): Install the package and download the model checkpoint (ViT-H SAM model). Rename the checkpoint file to `sam_vit_h.pth` and place it in the `checkpoint` folder.
+    ```bash
+    pip install git+https://github.com/facebookresearch/segment-anything.git
+    ```
+
+- [Mask2Former](https://github.com/facebookresearch/Mask2Former): Install the detectron2 package using the provided command.
+    ```bash
+    # detectron2
+    python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
+    ```
+
+## Usage
+
+To reconstruct the point cloud file for each sequence of the dataset, use the following command:
+
+```bash
+python3 reconstruct.py --seq_dir ITRI_dataset/[seq_name] --camera_dir_path ITRI_dataset/camera_info/lucid_cameras_x00 --segment_method [segment_method] --range 25
+```
+
+Replace `[seq_name]` with the name of the sequence and `[segment_method]` with the desired segmentation method. This command will generate a directory containing the point clouds for each camera and sequence.
+
+    [seq_name]
     ├── [segment_method]_pointclouds_[range]
     │   ├── b
     │   │   ├──[timestamps].csv
@@ -101,63 +80,44 @@ This would generate a directory that contains the point clouds of each camera of
     │   ├── fl
     │   └── fr
 
-After generating corresponding point clouds of given timestamps, this step will calculate the dx and dy of each frame using [ICP](https://zhuanlan.zhihu.com/p/107218828) method base on the sub_map.csv file in the dataset. **Notice** if visualize is set to true, it would create a window that shows the point cloud.
+After generating the point clouds, you can calculate the dx and dy of each frame using the [ICP]((https://zhuanlan.zhihu.com/p/107218828)) method based on the sub_map.csv file in the dataset. Use the following command:
+
 ```bash
-python3 gendxdy.py --target_pcd_dir ./seq1/CV_pointclouds --output_file solution/seq1/pred_pose.txt --seq_dir_path seq1 --visualize
-```
-After generating prediction position, we provide a function to visualize your predicted trajectory. This function will 
-```bash
-python3 viz_trajectory.py solution/seq1/pred_pose_25.txt
+python3 gendxdy.py --target_pcd_dir ./[seq_name]/[segment_method]_pointclouds_[range] --output_file solution/[seq_name]/pred_pose.txt --seq_dir_path [seq_name] --visualize
 ```
 
-## Related Informations
+Replace `[seq_name]` with the name of the sequence. This command will generate a prediction file containing the pose information.
 
-### Dataset format
+To visualize the predicted trajectory, use the following command:
 
-    seq/ (e.g. seq1, seq2, seq3)
-        dataset/
-            {time_stamp}/ (e.g. 1681710717_532211005)
-                1. camera.csv: 
-                    camera name
-                2. detect_road_marker.csv:
-                    a. detected bounding boxes, the bounding box are not always correct.
-                    b. format: (x1, y1, x2, y2, class_id, probability)
-                    c. class_id: (0:zebracross, 1:stopline, 2:arrow, 3:junctionbox, 4:other)
-                3. initial_pose.csv:
-                    initial pose for ICP in "base_link" frame.
-                4. raw_image.png:
-                    captured RGB image
-                5. sub_map.csv:
-                    map points for ICP, (x, y, z).
-                6. gound_turth_pose.csv: """not exist in all dirs"""
-                    x, y localization ground turth in "base_link" frame.
+```bash
+python3 utils/plot_utils.py --pred_file solution/[seq_name]/pred_pose.txt --smooth
+```
 
-        other_data/
-            {timestamp}_raw_speed.csv: (e.g. 1681710717_572170877_raw_speed.csv)
-                car speed(km/hr)
-            {timestamp}_raw_imu.csv:
-                1st line: orientation: x, y, z, w
-                2nd line: angular_velocity: x, y, z
-                3rd line: linear_acceleration: x, y, z
+Replace `[seq_name]` with the name of the sequence.
 
-        all_timestamp.txt:
-            list all directories in time order
-        localization_timestamp.txt:
-            list all directories with "gound_turth_pose.csv" in time order
+## Related Information
 
+### Dataset Format
 
-    camera_info/
-        {camera}/ (e.g. lucid_cameras_x00)
-            {camera_name}_camera_info.yaml: (e.g. gige_100_b_hdr_camera_info.yaml)
-                intrinsic parameters
-            {camera_name}_mask.png:
-                The mask for the ego car show in the image, it could help for decreasing some false alarms in detection.
-            camera_extrinsic_static_tf.launch:
-                transformation parameters between cameras
-                key_word: tf2_ros, Robot Operating System (ROS)
+The dataset follows a specific
+ format. Here is an overview of the directory structure:
 
+- seq/ (e.g., seq1, seq2, seq3): Contains the dataset for each sequence.
+  - dataset/{time_stamp}/ (e.g., 1681710717_532211005): Contains the data for each timestamp.
+    - camera.csv: Camera name.
+    - detect_road_marker.csv: Detected bounding boxes and their properties.
+    - initial_pose.csv: Initial pose for ICP in "base_link" frame.
+    - raw_image.png: Captured RGB image.
+    - sub_map.csv: Map points for ICP (x, y, z).
+    - gound_turth_pose.csv (not available in all directories): Ground truth localization in "base_link" frame.
+- other_data/: Contains additional data files.
 
-### Useful links
+- camera_info/{camera}/ (e.g., lucid_cameras_x00): Contains camera-specific information, such as intrinsic parameters, mask images, and transformation parameters.
+
+### Useful Links
+
+Here are some useful links related to the project:
 
 1. [Introduction to camera intrinsics and extrinsics](https://towardsdatascience.com/what-are-intrinsic-and-extrinsic-camera-parameters-in-computer-vision-7071b72fb8ec)
 2. [Base link implementation](http://wiki.ros.org/tf2_ros)

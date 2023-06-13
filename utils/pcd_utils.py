@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Tuple
 
 import cv2
 import numpy as np
@@ -81,7 +81,7 @@ def compare_contour(cnt1, cnt2):
         cY2 = int(M2["m01"] / max(M2["m00"], 1e04))
         return ((cX1-250)**2+(cY1-250)**2) < ((cX2-250)**2+(cY2-250)**2)
 
-def merge_pcd(pcd_dicts: List, iou_thres: float) -> np.array:
+def merge_pcd(pcd_dicts: List, iou_thres: float) -> Tuple[np.array, int]:
     """
     merge the point clouds
 
@@ -130,9 +130,9 @@ def merge_pcd(pcd_dicts: List, iou_thres: float) -> np.array:
                     break
     non_intersect_pcd = []
     (valid, ) = np.where(non_intersection)
-    print(f"remove {non_intersection.shape[0] - valid.shape[0]} contours")
+    # print(f"remove {non_intersection.shape[0] - valid.shape[0]} contours")
     for index in valid:
         non_intersect_pcd.append(all_pcd_dicts[index]["points"])
     
-    return np.concatenate(non_intersect_pcd, axis = 0)
+    return np.concatenate(non_intersect_pcd, axis = 0), (non_intersection.shape[0] - valid.shape[0])
         

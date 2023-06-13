@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--pred_file", type=str,
         help="your pred_pose.txt")
-    parser.add_argument("--smooth", type=bool,
+    parser.add_argument("--smooth", action='store_true',
         help="set this flag to smooth the output trajectory")
     
     args = parser.parse_args()
