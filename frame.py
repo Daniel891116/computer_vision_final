@@ -1,17 +1,13 @@
 import os
-from typing import Dict, List, Tuple, Union
+from typing import Dict, Union
 
-import cv2
 import json
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
 from PIL import Image
-from segment import SegmentAnythingWorker
+from segment_SAM import SegmentAnythingWorker
 from segment_cv2 import BaseSegmentWorke
-from utils.feature_utils import (filter_keypoints, get_SIFT_descriptor,
-                                 get_SIFT_features)
 from utils.marker_utils import read_road_marker
 
 class Frame():

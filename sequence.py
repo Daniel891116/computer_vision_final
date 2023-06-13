@@ -9,7 +9,7 @@ from tqdm import tqdm
 import config
 from camera import Camera
 from frame import Frame
-from segment import SegmentAnythingWorker
+from segment_SAM import SegmentAnythingWorker
 from segment_cv2 import BaseSegmentWorke
 from utils.SFM_utils import match_all_features
 
