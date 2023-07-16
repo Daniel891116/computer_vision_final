@@ -1,4 +1,5 @@
 camera_type = ['f', 'fl', 'fr', 'b']
+labels = ['arrow', 'junctionbox', 'stopline', 'zebracross', 'other']
 image_dir = 'ITRI_dataset/seq1/dataset'
 # image_dir = 'Herz-Jesus-P25/images/'
 # camera_file = 'Herz-Jesus-P25/images/K.txt'

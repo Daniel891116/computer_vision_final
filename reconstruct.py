@@ -1,20 +1,23 @@
+import argparse
+import json
 import os
-from typing import Dict, List
+from typing import Dict, List, Union
 
+import cv2
 import numpy as np
 from tqdm import tqdm
 
 import config
 from camera import Camera
 from sequence import Sequence
-from utils.pcd_utils import numpy2pcd, savepcd
-import argparse
+from utils.path_utils import check_directory_valid
+
 
 class Reconstruct:
     """
     Reconstruct class create a object that reconstruct the 3D point cloud of road marker from a sequence of images based on pinhole model or SFM method.
     """
-    def __init__(self, seq_dir: str, camera_dir: str, seg_method: str='CV'):
+    def __init__(self, seq_dir: str, camera_dir: str, seg_method: str='CV', range: int=25):
         """
         params:
             seg_dir: directory that contains the sequence frame 
@@ -26,6 +29,7 @@ class Reconstruct:
         self.seg_method = seg_method
         self.all_structure = dict()
         self.structures = dict()
+        self.range = range
 
     def __call__(self, reconstruct_method='pinhole'):
         if reconstruct_method == 'pinhole':
@@ -35,33 +39,77 @@ class Reconstruct:
         
     def __reconstruct(self) -> Dict[str, List]:
         print(f"reconstructing...\nmethod:[{self.seg_method}]")
-        for type in config.camera_type:
-            self.structures[type] = []
-            for frame in tqdm(self.sequence.frames[type]):
-                data = {
-                    # "timestamp": frame.timestamp,
-                    # "debug_img": cv2.drawContours(frame.image, frame.contours, -1, (255, 0, 0), 1),
-                    "pcd": self.__perspective_project(frame.camera, frame.keypoints, self.sequence.cameras, 25),
-                    "timestamp": frame.timestamp
-                }
-                self.structures[type].append(data)
+        if self.seg_method == 'SAM':
+            for type in config.camera_type:
+                self.structures[type] = []
+                for frame in tqdm(self.sequence.frames[type]):
+                    data = {
+                        "timestamp": frame.timestamp,
+                        "point_clouds": [],
+                    }
+                    for k, contour_list in frame.contours.items():
+                        for i, contour in enumerate(contour_list):
+                            points = self.__perspective_project(frame.camera, contour, self.sequence.cameras, self.range)
+                            if points.shape == (0,):
+                                continue
+                            if points.ndim == 1:
+                                points = np.expand_dims(points, 0)
+                            point_cloud = {
+                                "label": k,
+                                "dummy_index": i,
+                                # "debug_img": cv2.drawContours(frame.image, frame.contours, -1, (255, 0, 0), 1),
+                                # "pcd": self.__perspective_project(frame.camera, frame.keypoints, self.sequence.cameras, 25),
+                                "points": points.tolist(),
+                                "contour": (points[:, :-1] * 10 + np.array([250, 250])).astype(np.int32).tolist()
+                            }
+                            data["point_clouds"].append(point_cloud)
+                    self.structures[type].append(data)
+        elif self.seg_method == 'CV':
+            for type in config.camera_type:
+                self.structures[type] = []
+                for frame in tqdm(self.sequence.frames[type]):
+                    data = {
+                        "timestamp": frame.timestamp,
+                        "point_clouds": [],
+                    }       
+                    for i, contour in enumerate(frame.contours):
+                        points = self.__perspective_project(frame.camera, contour, self.sequence.cameras, 25)
+                        if points.shape == (0,):
+                            continue
+                        if points.ndim == 1:
+                            points = np.expand_dims(points, 0)
+                        point_cloud = {
+                            # "dummy_index": i,
+                            # "debug_img": cv2.drawContours(frame.image, frame.contours, -1, (255, 0, 0), 1),
+                            # "pcd": self.__perspective_project(frame.camera, frame.keypoints, self.sequence.cameras, 25),
+                            "points": points.tolist(),
+                            "contour": (points[:, :-1] * 10 + np.array([250, 250])).astype(np.int32).tolist()
+                        }
+                        data["point_clouds"].append(point_cloud)
+                    self.structures[type].append(data)
+        else:
+            raise NotImplementedError
 
         for type in config.camera_type:
-            save_dir = f"./{self.seq_dir.split('/')[-1]}/{self.seg_method}_pointclouds/{type}"
-            if not os.path.exists(save_dir):
-                os.makedirs(save_dir)
+            save_dir = os.path.join(self.seq_dir.split('/')[-1], f"{self.seg_method}_pointclouds_{self.range}", type)
+            check_directory_valid(save_dir)
             # plt.imsave(f"{type}_0.png", self.structures[type][0]["debug_img"])
+
             for data in self.structures[type]:
-                np.savetxt(os.path.join(save_dir,f"{data['timestamp']}.csv"), data['pcd'], delimiter=',', fmt='%f')
+                _save_dir = os.path.join(save_dir, f"{data['timestamp']}")
+                check_directory_valid(save_dir)
+                with open(f"{_save_dir}.json", 'w') as f:
+                    json.dump(data, f, indent = 4)
+                # np.savetxt(os.path.join(_save_dir, f"{data['dummy_index']}.csv"), data['pcd'], delimiter=',', fmt='%f')
                 # savepcd(os.path.join(f"{self.seg_method}_pointclouds",f"{data['timestamp']}.ply"), numpy2pcd(data["pcd"]))
 
-    def __perspective_project(self, camera: Camera, keypoints: List, cameras: List, range) -> np.ndarray:
+    def __perspective_project(self, camera: Camera, keypoints: List[Union[List, cv2.KeyPoint]], cameras: List, range: int) -> np.ndarray:
         """
         project the keypoints of image to z = -CAMERA_HEIGHT with respect to the base_link
 
         param:
             camera: the camera object that keypoints belongs to
-            keypoints: the keypoints to be projected
+            keypoints: the keypoints to be projected. List of List or Keypoint.
             base_transform: the transform from the f to base_link
             range: the maximum projected range with respect to the base_link
         """
@@ -96,9 +144,11 @@ class Reconstruct:
         a32 = R[2][1]
         a33 = -1
         a34 = R[2][2]*CAMERA_HEIGHT-T[2]
-        
         for kp in keypoints:
-            (u, v) = kp.pt
+            try:
+                [u, v] = kp
+            except ValueError:
+                (u, v) = kp[0]
             a13 = -u
             a14 = fx*(R[0][2]*CAMERA_HEIGHT-T[0])+cx*(R[2][2]*CAMERA_HEIGHT-T[2])
             a23 = -v
@@ -129,14 +179,16 @@ if __name__ == '__main__':
         help="seq path, some thing like /your/path/ITRI_dataset/seq1")
     parser.add_argument("--camera_dir_path", type=str,
         help="directory that contains the camera information. eg. ITRI_dataset/camera_info/lucid_cameras_x00")
-    parser.add_argument("--segment_method", type=str,
+    parser.add_argument("--segment_method", type=str, default='SAM',
         help="segmentation method applied to extract road marker. eg. [SAM|CV]")
+    parser.add_argument("--range", type=int, default=25,
+        help="range of reconstructed 3D points")
 
     
     args = parser.parse_args()
-    reconstructor = Reconstruct(args.seq_dir_path, args.camera_dir_path, seg_method=args.segment_method)
+    reconstructor = Reconstruct(args.seq_dir_path, args.camera_dir_path, seg_method=args.segment_method, range=args.range)
     reconstructor('pinhole')
-    # base_f = np.linalg.inv(reconstructor.sequence.cameras['f'].transform)
+    # base_f = np.linalg.inv(reconsctructor.sequence.cameras['f'].transform)
     # base_fl = np.linalg.inv(reconstructor.sequence.cameras['fl'].transform) @ base_f
     # base_fr = np.linalg.inv(reconstructor.sequence.cameras['fr'].transform) @ base_f
     # base_b = np.linalg.inv(reconstructor.sequence.cameras['b'].transform) @\
@@ -163,4 +215,5 @@ if __name__ == '__main__':
     #     savepcd(f"basis_fl_{axis}.ply", numpy2pcd(basis_fl[100*i:100*(i+1)]))
     #     savepcd(f"basis_fr_{axis}.ply", numpy2pcd(basis_fr[100*i:100*(i+1)]))
     #     savepcd(f"basis_b_{axis}.ply", numpy2pcd(basis_b[100*i:100*(i+1)]))
+
 

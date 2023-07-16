@@ -167,3 +167,11 @@ mask/
 # Dataset
 ITRI*/
 *.csv
+*.json
+*.zip
+
+# submit data
+solution/*
+
+# image
+*.png
